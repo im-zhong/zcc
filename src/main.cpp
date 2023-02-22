@@ -1,5 +1,3 @@
 #include "zcc.h"
 
-int main() {
-    zcc();
-}
+int main() { zcc(); }

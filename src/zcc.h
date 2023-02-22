@@ -1,10 +1,9 @@
 #pragma once
 
-
 #ifdef _WIN32
-  #define ZCC_EXPORT __declspec(dllexport)
+#define ZCC_EXPORT __declspec(dllexport)
 #else
-  #define ZCC_EXPORT
+#define ZCC_EXPORT
 #endif
 
 ZCC_EXPORT void zcc();
