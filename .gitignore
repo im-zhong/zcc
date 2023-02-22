@@ -31,7 +31,7 @@
 *.out
 *.app
 
-# conan
+# conan, clang
 .cache
 build
 compile_commands.json
