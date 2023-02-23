@@ -1,12 +1,12 @@
 /*
-        2020/5/15 �о�C�ؼ��ֵ�������ϣ
+        2020/5/15 研究C关键字的完美哈希
 
-        �ҵ�������ϣ���������㷨�о��ɹ���
-        ����Ҫ����������ϣ����
-        ��������ϣ�����ֱ���Ҫһ��128*32������������ʾ���Ӧ��ÿһ����ĸ��key
-        Ȼ����Ҫ������������ h1 h2
-        Ȼ������һ������ g
-        Ȼ������������ϣ���������յ�������ϣ����
+        我的完美哈希函数生成算法研究成功！
+        他需要生成两个哈希函数
+        这两个哈希函数分别需要一个128*32的数组用来表示其对应于每一个字母的key
+        然后需要生成两个数组 h1 h2
+        然后生成一个数组 g
+        然后生成两个哈希函数和最终的完美哈希函数
 */
 
 #include "perfect_hash_generator.h"
@@ -19,7 +19,7 @@
 using namespace std;
 
 StringHash strh;
-// ��׼��һ���ؼ�������
+// 先准备一个关键字数组
 
 constexpr size_t keyword_size = 28;
 unsigned int graph_size = 32;
@@ -28,7 +28,7 @@ unsigned int graph_size = 32;
 // constexpr unsigned int graph_size = 15;
 
 char* keyword[keyword_size] = {
-    // ����
+    // 类型
     "auto",   "extern", "static",   "const",   "volatile",
 
     "void",   "signed", "unsigned", "char",    "int",      "short",
@@ -50,9 +50,9 @@ vector<unsigned int> h2{};
 vector<int> g{};
 vector<bool> check_g{};
 
-// �������к����ĺ���ָ��
+// 定义所有函数的函数指针
 using HashPtr = unsigned int (*)(char*);
-// �����ϣ����ָ���
+// 定义哈希函数指针表
 HashPtr hash_function_table[] = {SDBMHash, RSHash,   JSHash,  PJWHash,
                                  ELFHash,  BKDRHash, DJBHash, APHash};
 constexpr unsigned int hash_function_size = 8;
@@ -60,15 +60,15 @@ constexpr unsigned int hash_function_size = 8;
 void support(unsigned int v) {
     int adjacent_v = 0;
     for (size_t i = 0; i < keyword_size; i++) {
-        // �ҵ��ڵ�v0���������ڽڵ�
+        // 找到节点v0的所有相邻节点
         if (h1[i] == v || h2[i] == v) {
             if (h1[i] == v)
                 adjacent_v = h2[i];
             else if (h2[i] == v)
                 adjacent_v = h1[i];
 
-            // ����ҵ��ı�û�б����� ��������
-            // ���޸�flag g[v1] = h - g[v0]
+            // 如果找到的边没有被设置 就设置他 并修改flag
+            // g[v1] = h - g[v0]
             if (!check_g[adjacent_v]) {
                 g[adjacent_v] = int(i) - g[v];
                 check_g[adjacent_v] = true;
@@ -78,43 +78,43 @@ void support(unsigned int v) {
     }
 }
 
-// ��h1,h2���������ʾһ��ͼ������h1[i],h2[i]��ʾͼ�е�һ����
-// ���б�keyword_size = 28��
-// ���нڵ�graph_size = 32��
+// 用h1,h2两个数组表示一个图，其中h1[i],h2[i]表示图中的一条边
+// 共有边keyword_size = 28个
+// 共有节点graph_size = 32个
 bool is_circle(const vector<unsigned int>& h1, const vector<unsigned int>& h2,
                unsigned int keyword_size, // size(h) = keyword_size
                unsigned int graph_size)   // value(h) = graph_size
 {
 
-    // ����ʹ�ò���������������� ��Ȼ̫�鷳��
+    // 我们使用参数来调用这个函数 不然太麻烦了
 
-    // ���h1 h2��ɵ�ͼ�Ƿ��л�
+    // 检查h1 h2组成的图是否有环
     vector<bool> edge{};
     edge.resize(keyword_size, true);
     bool flag = false;
     /*
-    ��������ͼ
+    对于无向图
 
-�㷨1
+算法1
 
-����֪�����ڻ�1-2-3-4-1��ÿ���ڵ�Ķȶ���2�����ڴ������������㷨����������������ͼ���������򣩣�
+我们知道对于环1-2-3-4-1，每个节点的度都是2，基于此我们有如下算法（这是类似于有向图的拓扑排序）：
 
-���ͼ�����ж���Ķȣ�
-ɾ��ͼ�����ж�<=1�Ķ����Լ���ö�����صıߣ�������Щ����صĶ���Ķȼ�һ
-������ж�<=1�Ķ����ظ�����2
-������������δ��ɾ���Ķ��㣬���ʾ�л�������û�л�
+求出图中所有顶点的度，
+删除图中所有度<=1的顶点以及与该顶点相关的边，把与这些边相关的顶点的度减一
+如果还有度<=1的顶点重复步骤2
+最后如果还存在未被删除的顶点，则表示有环；否则没有环
 
     */
 
-    // ���ȼ�������нڵ�Ķ�
+    // 首先计算出所有节点的度
     vector<unsigned int> degree{};
     degree.resize(graph_size, 0);
 
     while (true) {
-        // flag = false ��ʾ���ε�����û��ɾ����
+        // flag = false 表示本次迭代还没有删除边
         flag = false;
 
-        // ���¼������нڵ�Ķ�
+        // 重新计算所有节点的度
         fill(degree.begin(), degree.end(), 0);
         for (size_t i = 0; i < keyword_size; i++) {
             if (edge[i]) {
@@ -123,18 +123,19 @@ bool is_circle(const vector<unsigned int>& h1, const vector<unsigned int>& h2,
             }
         }
 
-        // ɾ��ͼ�����ж�С��1�Ķ������Ӧ�ı�
+        // 删除图中所有度小于1的定点和相应的边
         for (size_t i = 0; i < graph_size; i++) {
-            // degree[i] = 0 ��ʾ�˽ڵ㱻ɾ����
+            // degree[i] = 0 表示此节点被删除了
             if (degree[i] >= 0 && degree[i] <= 1) {
-                // �ҵ��˽ڵ��Ӧ�ı� ��Ϊ���Ķ�Ϊ1 ���Ա�Ȼֻ����һ�����Դ˽ڵ�Ϊ�˵�
+                // 找到此节点对应的边 因为他的度为1
+                // 所以必然只存在一条边以此节点为端点
                 for (size_t j = 0; j < keyword_size; j++) {
-                    // ����������û�б�ɾ��
-                    // ���������ߵĶ˵�����һ��
+                    // 首先这条边没有被删除
+                    // 并且这条边的端点中有一个
                     if (edge[j] && (h1[j] == i || h2[j] == i)) {
-                        // ����Ӧ��ɾ��������
+                        // 我们应该删除这条边
                         edge[j] = false;
-                        // ��ʾ����ɾ���˱�
+                        // 表示我们删除了边
                         flag = true;
                         break;
                     }
@@ -142,13 +143,13 @@ bool is_circle(const vector<unsigned int>& h1, const vector<unsigned int>& h2,
             }
         }
 
-        // ����ڱ��ε�����û��ɾ���� ��ʾ�㷨ִ����� ����
+        // 如果在本次迭代中没有删除边 表示算法执行完毕 跳出
         if (!flag)
             break;
     }
 
-    // ����Ƿ����δ��ɾ���Ľ��
-    // ��ʵֻ��Ҫ����Ƿ���δ��ɾ���ı߼���
+    // 检查是否存在未被删除的结点
+    // 其实只需要检查是否还有未被删除的边即可
     for (const auto& e : edge)
         if (e)
             return true;
@@ -187,7 +188,7 @@ bool is_circle(const vector<unsigned int>& h1, const vector<unsigned int>& h2,
 */
 
 bool app_main(HashPtr hash1, HashPtr hash2) {
-    // ����ӳ��g
+    // 计算映射g
     int v0 = 0;
     int v1 = 0;
 
@@ -203,16 +204,16 @@ bool app_main(HashPtr hash1, HashPtr hash2) {
         cout << i << " : " << h1[i] << "\t" << h2[i] << endl;
     }
 
-    // ����Ƿ��л� ����л� ��ô�ͽ��� �����ִ�н������ļ���
+    // 检查是否有环 如果有环 那么就结束 否则就执行接下来的计算
     if (is_circle(h1, h2, keyword_size, graph_size)) {
-        cout << "���ڻ�" << endl;
+        cout << "存在环" << endl;
         return false;
     }
-    cout << "�����ڻ�" << endl;
+    cout << "不存在环" << endl;
 
-    // ������ɵ�ͼ�Ƿ���ڻ�
-    // cout << "�Ƿ���ڻ�" << is_circle(h1, h2, keyword_size, graph_size) << endl;
-    // cout << "�Ƿ���ڻ�" << is_circle(th1, th2, 12, 15) << endl;
+    // 检查生成的图是否存在环
+    // cout << "是否存在环" << is_circle(h1, h2, keyword_size, graph_size) <<
+    // endl; cout << "是否存在环" << is_circle(th1, th2, 12, 15) << endl;
 
     g.resize(graph_size);
     std::fill(g.begin(), g.end(), 0);
@@ -223,10 +224,10 @@ bool app_main(HashPtr hash1, HashPtr hash2) {
     bool is_all_checked = false;
 
     while (true) {
-        // ������е㶼�������� ��ô����ִ�н���
+        // 如果所有点都被设置了 那么程序执行结束
 
         is_all_checked = true;
-        // Ѱ��һ��û�б����õĵ�
+        // 寻找一个没有被设置的点
         for (size_t i = 0; i < graph_size; i++) {
             if (!check_g[i]) {
                 v0 = i;
@@ -236,13 +237,13 @@ bool app_main(HashPtr hash1, HashPtr hash2) {
         }
 
         if (is_all_checked) {
-            // ���g
+            // 输出g
             for (size_t i = 0; i < graph_size; i++) {
                 cout << i << " : " << g[i] << endl;
             }
             return true;
         } else {
-            // ��ʼ��Ϊ0
+            // 初始化为0
             g[v0] = 0;
             check_g[v0] = true;
             support(v0);
@@ -256,7 +257,7 @@ bool my_main() {
 
     strhash2.random_weight();
 
-    // ����ӳ��g
+    // 计算映射g
     int v0 = 0;
     int v1 = 0;
 
@@ -273,16 +274,16 @@ bool my_main() {
     //	cout << i << " : " << h1[i] << "\t" << h2[i] << endl;
     // }
 
-    // ����Ƿ��л� ����л� ��ô�ͽ��� �����ִ�н������ļ���
+    // 检查是否有环 如果有环 那么就结束 否则就执行接下来的计算
     if (is_circle(h1, h2, keyword_size, graph_size)) {
-        // cout << "���ڻ�" << endl;
+        // cout << "存在环" << endl;
         return false;
     }
-    // cout << "�����ڻ�" << endl;
+    // cout << "不存在环" << endl;
 
-    // ������ɵ�ͼ�Ƿ���ڻ�
-    // cout << "�Ƿ���ڻ�" << is_circle(h1, h2, keyword_size, graph_size) << endl;
-    // cout << "�Ƿ���ڻ�" << is_circle(th1, th2, 12, 15) << endl;
+    // 检查生成的图是否存在环
+    // cout << "是否存在环" << is_circle(h1, h2, keyword_size, graph_size) <<
+    // endl; cout << "是否存在环" << is_circle(th1, th2, 12, 15) << endl;
 
     g.resize(graph_size);
     std::fill(g.begin(), g.end(), 0);
@@ -293,10 +294,10 @@ bool my_main() {
     bool is_all_checked = false;
 
     while (true) {
-        // ������е㶼�������� ��ô����ִ�н���
+        // 如果所有点都被设置了 那么程序执行结束
 
         is_all_checked = true;
-        // Ѱ��һ��û�б����õĵ�
+        // 寻找一个没有被设置的点
         for (size_t i = 0; i < graph_size; i++) {
             if (!check_g[i]) {
                 v0 = i;
@@ -306,16 +307,16 @@ bool my_main() {
         }
 
         if (is_all_checked) {
-            // ���g
+            // 输出g
             for (size_t i = 0; i < graph_size; i++) {
                 // cout << i << " : " << g[i] << endl;
-                // Ҫ�����е�g>=0
+                // 要求所有的g>=0
                 // if (g[i] < 0)
                 //	return false;
             }
             return true;
         } else {
-            // ��ʼ��Ϊ0
+            // 初始化为0
             g[v0] = 0;
             check_g[v0] = true;
             support(v0);
@@ -343,14 +344,14 @@ bool is_keyword(const std::string& str) {
 }
 
 /*
-        �����������ʵ��������ϣ�㷨
-        2020/5/15 19��55���
+        这个函数可以实现完美哈希算法
+        2020/5/15 19：55封存
 */
 int old_main() {
     // StringHash strhash1;
     // StringHash strhash2;
 
-    //// ����Ҫ�ĳ�ʼ������
+    //// 做必要的初始化工作
     // HashPtr hash1 = BKDRHash;
     // HashPtr hash2 = APHash;
     // graph_size = 43;
@@ -359,7 +360,7 @@ int old_main() {
     //	hash1 = hash_function_table[i];
     //	for (size_t j = 0; j < hash_function_size; j++)
     //	{
-    //		// �ڵ���ÿһ������֮ǰ��ʼ�����е�����
+    //		// 在调用每一个函数之前初始化所有的数据
     //		// h1 h2 g check_g v1 v2
     //		hash2 = hash_function_table[j];
     //		if(i != j)
@@ -378,7 +379,7 @@ int old_main() {
     // e(std::chrono::system_clock::now().time_since_epoch().count());
     // std::uniform_int_distribution<unsigned int> u(0, 128);
     // unsigned int r = u(e);
-    //// �������Լ�д�Ĺ�ϣ����
+    //// 测试我自己写的哈希函数
     // while (true)
     //{
 
@@ -391,21 +392,21 @@ int old_main() {
         cout << i++ << endl;
     }
 
-    cout << "�ɹ�" << endl;
-    // ������������
+    cout << "成功" << endl;
+    // 在这里输出结果
     for (size_t i = 0; i < keyword_size; i++) {
         cout << i << " : " << h1[i] << " " << h2[i] << endl;
     }
 
-    // ���������g
+    // 在这里输出g
     for (size_t i = 0; i < graph_size; i++) {
         cout << i << " : " << g[i] << endl;
-        // Ҫ�����е�g>=0
+        // 要求所有的g>=0
         // if (g[i] < 0)
         //	return false;
     }
 
-    // �������������asciikey��
+    // 在这里输出两个asciikey表
     for (size_t i = 0; i < 128; i++) {
         cout << i << " : " << strhash1.ascii_weight[i] << endl;
     }
@@ -414,7 +415,7 @@ int old_main() {
         cout << i << " : " << strhash2.ascii_weight[i] << endl;
     }
 
-    // ��ô���������֤�����ϣ��������ȷ���أ�
+    // 那么我们如何验证这个哈希函数是正确的呢？
     // h(t) = g(h1(t)) + g(h2(t))
     for (size_t i = 0; i < keyword_size; i++) {
         cout << i << " : "
@@ -424,7 +425,7 @@ int old_main() {
         cout << "is key word" << is_keyword(keyword[i]) << endl;
     }
 
-    // ������ɱ���ַ��������ǲ���keyword
+    // 随机生成别的字符串看看是不是keyword
     std::default_random_engine e(
         std::chrono::system_clock::now().time_since_epoch().count());
     std::uniform_int_distribution<unsigned int> u(0, 20);
@@ -434,10 +435,10 @@ int old_main() {
         // cout << str << " " << is_keyword(str) << endl;
         if (is_keyword(str)) {
             cout << str << endl;
-            cout << str << "�ǹؼ���" << endl;
+            cout << str << "是关键字" << endl;
         }
     }
-    cout << "���Գɹ���";
+    cout << "测试成功！";
     return 0;
 }
 
@@ -446,24 +447,24 @@ int main() {
         PerfectHashGenerator generator("keyword.txt");
         generator.generate_codefile();
 
-        // 2020/5/21 ������㶫��
-        cout << "����ַ�������" << endl;
+        // 2020/5/21 多输出点东西
+        cout << "输出字符串数组" << endl;
         for (size_t i = 0; i < keyword_size; i++) {
             cout << i << " : " << keyword[i] << endl;
         }
 
-        cout << "���h1,h2" << endl;
+        cout << "输出h1,h2" << endl;
         for (size_t i = 0; i < generator.h1.size(); i++) {
             cout << i << " : " << keyword[i] << "\t\t" << generator.h1[i]
                  << "\t" << generator.h2[i] << endl;
         }
 
-        cout << "���g" << endl;
+        cout << "输出g" << endl;
         for (size_t i = 0; i < generator.g.size(); i++) {
             cout << i << " : " << generator.g[i] << endl;
         }
 
-        // ��ȷ�Բ���
+        // 正确性测试
         for (size_t i = 0; i < generator.edge_size; i++) {
             // cout << i << " : " << g[strhash1.my_hash(keyword[i]) %
             // graph_size] + g[strhash2.my_hash(keyword[i]) % graph_size] <<
@@ -472,7 +473,7 @@ int main() {
                  << generator.perfect_hash(generator.string_vector[i]) << endl;
         }
 
-        // ������ɱ���ַ��������ǲ���keyword
+        // 随机生成别的字符串看看是不是keyword
         std::default_random_engine e(
             std::chrono::system_clock::now().time_since_epoch().count());
         std::uniform_int_distribution<unsigned int> u(0, 128);
@@ -482,10 +483,10 @@ int main() {
             // cout << str << " " << is_keyword(str) << endl;
             if (generator.perfect_hash(str)) {
                 cout << str << endl;
-                cout << str << "�ǹؼ���" << endl;
+                cout << str << "是关键字" << endl;
             }
         }
-        cout << "���Գɹ���";
+        cout << "测试成功！";
     } catch (const std::exception& e) {
         std::cerr << e.what() << endl;
     }

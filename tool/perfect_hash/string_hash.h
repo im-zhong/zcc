@@ -23,12 +23,12 @@ class StringHash {
         return (hash & 0x7FFFFFFF);
     }
 
-    // ���һ��רΪ����������ϣ����Ƶ��ַ�����ϣ����
-    // Ϊÿһ����ĸ���һ��key
-    // ÿ�ζ��������
-    // ���ϲ��� ֱ�����Գ�һ������ʹ�õĹ�ϣ����
+    // 设计一种专为生成完美哈希而设计的字符串哈希函数
+    // 为每一个字母设计一个key
+    // 每次都随机生成
+    // 不断测试 直到测试出一个可以使用的哈希函数
     int ascii_weight[128]{};
-    // ��0 - 128 ����������������128���ռ��� ���ұ�֤ÿ�����ֶ��������
+    // 将0 - 128 个数字重新填入这128个空间中 并且保证每个数字都是随机的
 
     void random_weight() {
         std::default_random_engine e(std::chrono::high_resolution_clock::now()
@@ -61,7 +61,7 @@ class StringHash {
         return (hash & 0x7FFFFFFF);
     }
 
-    // �����ַ�����ϣ������BKDRHash��APHash��DJBHash��JSHash��RSHash��SDBMHash��PJWHash��ELFHash�ȵȡ�
+    // 常用字符串哈希函数有BKDRHash，APHash，DJBHash，JSHash，RSHash，SDBMHash，PJWHash，ELFHash等等。
     // SDBMHash
     unsigned int SDBMHash(char* str) {
         unsigned int hash = 0;
@@ -176,7 +176,7 @@ class StringHash {
     }
 };
 
-// �����ַ�����ϣ������BKDRHash��APHash��DJBHash��JSHash��RSHash��SDBMHash��PJWHash��ELFHash�ȵȡ�
+// 常用字符串哈希函数有BKDRHash，APHash，DJBHash，JSHash，RSHash，SDBMHash，PJWHash，ELFHash等等。
 // SDBMHash
 unsigned int SDBMHash(char* str) {
     unsigned int hash = 0;
