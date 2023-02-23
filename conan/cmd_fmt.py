@@ -23,14 +23,21 @@ def fmt(conan_api: ConanAPI, parser, *args):
     # 执行clang-format命令
     # 这还不如让python遍历一下当前目录呢
     # 这个牛逼了 os.walk会帮你递归的遍历文件 方便
-    for root, _, files in os.walk("src"):
+    for root, _, files in os.walk("tool"):
         for file in files:
             if file.endswith((".h", ".hpp", ".c", ".cxx", ".cpp")):
                 filename = os.path.join(root, file)
                 print(filename)
                 subprocess.run(["clang-format", "-i", filename])
 
-    for root, _, files in os.walk("test"):
+    for root, _, files in os.walk("util"):
+        for file in files:
+            if file.endswith((".h", ".hpp", ".c", ".cxx", ".cpp")):
+                filename = os.path.join(root, file)
+                print(filename)
+                subprocess.run(["clang-format", "-i", filename])
+
+    for root, _, files in os.walk("zcc"):
         for file in files:
             if file.endswith((".h", ".hpp", ".c", ".cxx", ".cpp")):
                 filename = os.path.join(root, file)
