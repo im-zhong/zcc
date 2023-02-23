@@ -19,3 +19,8 @@ Zhong's C Compiler
 
 # convert
 `iconv -f GB2312 -t UTF-8 zcc/keyword_hash/string_hash.h -o zcc/keyword_hash/string_hash.h`
+
+# finish part
+1. core
+2. perfect hash
+3. scan
