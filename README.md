@@ -26,4 +26,4 @@ Zhong's C Compiler
 3. scan
 4. symbol, symbol table
 5. type
-6. tree, expression, statement,
+6. tree, expression, statement, declaration
