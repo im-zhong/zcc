@@ -1,4 +1,4 @@
-#include "token.h"
+#include "scan/token.h"
 #include <iostream>
 
 using namespace std;

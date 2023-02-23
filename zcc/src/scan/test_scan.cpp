@@ -4,8 +4,8 @@
         CMake Lexer
 */
 
-#include "lexer.h"
-#include "make_terminal.h"
+#include "scan/lexer.h"
+#include "scan/make_terminal.h"
 
 using namespace std;
 using namespace cml;
