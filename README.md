@@ -24,3 +24,4 @@ Zhong's C Compiler
 1. core
 2. perfect hash
 3. scan
+4. symbol, symbol table
