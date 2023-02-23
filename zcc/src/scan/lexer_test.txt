@@ -1,0 +1,12 @@
+int main(int argc, char* argv[])
+{
+	const int N = 100;
+	int a = 0, b = 0, c = 0;
+	do
+	{
+		b = a + 1;
+		c = c + b;
+		a = b * 2;
+	} while (a < N);
+	return c;
+}

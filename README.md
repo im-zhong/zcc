@@ -18,4 +18,4 @@ Zhong's C Compiler
 `find . -iname *.h -o -iname *.c -o -iname *.cpp | xargs clang-format -i`
 
 # convert
-` iconv -f GB2312 -t UTF-8 zcc/keyword_hash/string_hash.h -o zcc/keyword_hash/string_hash.h`
+`iconv -f GB2312 -t UTF-8 zcc/keyword_hash/string_hash.h -o zcc/keyword_hash/string_hash.h`
