@@ -25,3 +25,4 @@ Zhong's C Compiler
 2. perfect hash
 3. scan
 4. symbol, symbol table
+5. type

@@ -8,9 +8,10 @@
 #ifndef _CML_TABLE_H_
 #define _CML_TABLE_H_
 
-#include "scoped_table.h"
 #include "symbol.h"
-#include "unscoped_table.h"
+#include "util/scoped_table.h"
+#include "util/unscoped_table.h"
+
 
 _CML_BEGIN_
 using SymbolTable = ScopedTable<std::shared_ptr<Symbol>>;

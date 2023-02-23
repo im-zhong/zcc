@@ -2,8 +2,8 @@
         3.6 符号表基础功能实现
 */
 
-#include "symbol/scoped_table.h"
-#include "symbol/unscoped_table.h"
+#include "util/scoped_table.h"
+#include "util/unscoped_table.h"
 #include <iostream>
 
 using namespace std;
