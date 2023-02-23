@@ -1,0 +1,7 @@
+auto double int struct
+break else long switch
+char extern return union
+const float short unsigned
+continue for signed void
+defautl goto sizeof volatile
+do if static while
