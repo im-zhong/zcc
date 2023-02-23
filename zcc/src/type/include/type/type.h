@@ -91,7 +91,6 @@
 #include "struct_type.h"
 #include "union_type.h"
 
-
 // std::shared_ptr<Type> make_const(std::shared_ptr<Type> type);
 // std::shared_ptr<Type> make_volatile(std::shared_ptr<Type>& type);
 // std::shared_ptr<Type> make_const_volatile(std::shared_ptr<Type>& type);

@@ -27,7 +27,6 @@
 #include "type_metric.h"
 #include <memory>
 
-
 _CML_BEGIN_
 
 // 因为Type的类成员是使用的如此频繁 所以作为公开成员 不用提供函数了

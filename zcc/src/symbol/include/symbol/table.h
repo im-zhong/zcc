@@ -12,7 +12,6 @@
 #include "util/scoped_table.h"
 #include "util/unscoped_table.h"
 
-
 _CML_BEGIN_
 using SymbolTable = ScopedTable<std::shared_ptr<Symbol>>;
 _CML_END_
