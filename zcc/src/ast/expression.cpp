@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 
-
 using namespace std;
 using namespace cml;
 _CML_BEGIN_

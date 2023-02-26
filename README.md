@@ -27,3 +27,6 @@ Zhong's C Compiler
 4. symbol, symbol table
 5. type
 6. tree, expression, statement, declaration
+
+# emit llvm ir
+`clang -S -emit-llvm src.c`
