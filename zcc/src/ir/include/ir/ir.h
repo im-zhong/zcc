@@ -134,6 +134,9 @@ struct TypedSymbol {
     int type;
 };
 
+using SymbolList = std::vector<TypedSymbol>;
+auto make_empty_symbol_list() -> SymbolList;
+
 struct Branch {
     std::optional<TypedSymbol> condition;
     std::string true_label;
@@ -148,9 +151,37 @@ BranchPtr make_half_branch(std::string symbol, int type,
                            std::string true_label);
 BranchPtr make_goto(std::string label);
 
-using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr>;
+struct FnCall {
+    // 调用的函数名字
+    std::string name;
+    // 返回符号 但是可选
+    std::optional<std::string> result;
+    // 返回类型 可选
+    std::optional<int> return_type;
+    // 参数列表在函数声明和函数定义中是一样的 可以定义一个typedef
+    // 因为后面会修改type的实现那
+    std::vector<TypedSymbol> parameter_list;
+
+    std::string to_string() const;
+};
+using FnCallPtr = std::shared_ptr<FnCall>;
+FnCallPtr make_fncall(std::string name, SymbolList parameter_list);
+FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
+                                 std::string result, int return_type);
+
+using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
+
+// function就是另外一条赛道了
+// struct FnDecl {
+//     // 函数名字
+//     std::string name;
+//     // 函数返回类型
+//     int return_type;
+//     // 参数列表
+//     std::vector<TypedSymbol> parameter_list;
+// };
 
 // 为了让parser可以构造triple 我们需要提供一些函数
 // 给各种指令提供

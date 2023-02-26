@@ -49,6 +49,7 @@ blank [ \t\r]
 "struct"    { return yy::parser::make_STRUCT(loc); }
 "type"      { return yy::parser::make_TYPE(loc); }
 "goto"      { return yy::parser::make_GOTO(loc); }
+"call"      { return yy::parser::make_CALL(loc); }
 
  /* basic type C++的枚举没法自动转换成 */
 "bool"  { return yy::parser::make_basic_type(IR::BOOL, loc); }
@@ -67,6 +68,7 @@ blank [ \t\r]
 "="     { return yy::parser::make_assign(loc); }
 "("     { return yy::parser::make_left_parenthesis(loc); }
 ")"     { return yy::parser::make_right_arenthesis(loc); }
+"->"    { return yy::parser::make_ARROW(loc); }
 
  /* cast */
  /* "bitcast" {}

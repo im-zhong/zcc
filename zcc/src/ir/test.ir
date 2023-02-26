@@ -17,3 +17,5 @@
 if %1:bool then %label1 else %label2
 if %1:bool then %label1
 goto %label1
+call @somefun(%1:i32, %2:i8)
+%1 = call @somefun(%1:i32, %2:i8) -> i32

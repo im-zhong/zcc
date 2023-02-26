@@ -9,6 +9,8 @@
 #include <string>
 
 namespace ir {
+
+auto make_empty_symbol_list() -> SymbolList { return {}; }
 // todo
 InstructionPtr make_binary_assignment(int op, std::string left, int left_type,
                                       std::string right, int right_type,
@@ -63,6 +65,23 @@ BranchPtr make_half_branch(std::string symbol, int type,
 BranchPtr make_goto(std::string label) {
     return std::make_shared<Branch>(Branch{
         .true_label = label,
+    });
+}
+
+FnCallPtr make_fncall(std::string name, SymbolList parameter_list) {
+    return std::make_shared<FnCall>(FnCall{
+        .name = name,
+        .parameter_list = parameter_list,
+    });
+}
+
+FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
+                                 std::string result, int return_type) {
+    return std::make_shared<FnCall>(FnCall{
+        .name = name,
+        .result = result,
+        .return_type = return_type,
+        .parameter_list = parameter_list,
     });
 }
 
@@ -155,7 +174,28 @@ std::string Branch::to_string() const {
         }
     } else {
         // goto
-        ss << "goto " << true_label << std::endl;
+        ss << "goto " << true_label;
+    }
+    return ss.str();
+}
+
+std::string FnCall::to_string() const {
+    std::stringstream ss;
+    if (result) {
+        ss << *result << " = ";
+    }
+    ss << "call " << name << "(";
+    // 这中间是参数列表
+    for (size_t i = 0; i < parameter_list.size(); i++) {
+        ss << parameter_list[i].symbol << ":"
+           << type_to_string(parameter_list[i].type);
+        if (i < parameter_list.size() - 1) {
+            ss << ", ";
+        }
+    }
+    ss << ")";
+    if (return_type) {
+        ss << " -> " << type_to_string(*return_type);
     }
     return ss.str();
 }

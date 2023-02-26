@@ -47,6 +47,7 @@ namespace ir { class driver; }
     comma ","
     left_parenthesis "("
     right_arenthesis ")"
+    ARROW "->"
     IF "if"
     THEN "then"
     ELSE "else"
@@ -57,6 +58,7 @@ namespace ir { class driver; }
     STRUCT "struct"
     TYPE "type"
     GOTO "goto"
+    CALL "call"
     /* add "+"
     sub "-"
     mul "*"
@@ -95,6 +97,7 @@ namespace ir { class driver; }
 
 %nterm <ir::Code> code
 %nterm <ir::CodeList> code_list
+%nterm <ir::SymbolList> parameter_list
 
 
 // only for test
@@ -143,6 +146,28 @@ code
     }
     | "goto" symbol {
         $$ = ir::make_goto($2);
+    }
+    | "call" symbol "(" parameter_list ")" {
+        $$ = ir::make_fncall($2, $4);
+    }
+    | symbol "=" "call" symbol "(" parameter_list ")" "->" type {
+        $$ = ir::make_fncall_assignment($4, $6, $1, $9);
+    }
+    ;
+
+parameter_list
+    : { 
+        // 创建一个parameterlist
+        $$ = ir::make_empty_symbol_list();
+    }
+    | symbol ":" type {
+        auto list = ir::make_empty_symbol_list();
+        list.push_back(ir::TypedSymbol{.symbol = $1, .type = $3});
+        $$ = std::move(list);
+    }
+    | parameter_list "," symbol ":" type {
+        $1.push_back(ir::TypedSymbol{.symbol = $3, .type = $5});
+        $$ = std::move($1);
     }
     ;
 

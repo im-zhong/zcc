@@ -111,3 +111,5 @@ int test_mod() {
     int k = i % j;
     return k;
 }
+
+int test_fn(int i, double d) { return test_fn(i, d); }

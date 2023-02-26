@@ -146,6 +146,18 @@ define dso_local i32 @test_mod() #0 {
   ret i32 %7
 }
 
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @test_fn(i32 noundef %0, double noundef %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca double, align 8
+  store i32 %0, ptr %3, align 4
+  store double %1, ptr %4, align 8
+  %5 = load i32, ptr %3, align 4
+  %6 = load double, ptr %4, align 8
+  %7 = call i32 @test_fn(i32 noundef %5, double noundef %6)
+  ret i32 %7
+}
+
 attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 
 !llvm.module.flags = !{!0, !1, !2}
