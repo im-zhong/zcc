@@ -21,6 +21,14 @@ InstructionPtr make_binary_assignment(int op, std::string left, int left_type,
                                                      .result = result});
 }
 
+InstructionPtr make_assignment(std::string left, int left_type,
+                               std::string result) {
+    return std::make_shared<Instruction>(Instruction{.op = IR::ASSIGN,
+                                                     .left = left,
+                                                     .left_type = left_type,
+                                                     .result = result});
+}
+
 CodeList make_empty_code_list() { return {}; }
 
 LabelPtr make_label(std::string label) {
@@ -88,9 +96,15 @@ std::string op_to_string(int op) {
 }
 
 std::string Instruction::to_string() const {
+    // 现在我们需要检查它是不是assigment
     std::stringstream ss;
-    ss << result << " = " << left << ":" << type_to_string(left_type) << " "
-       << op_to_string(op) << " " << right << ":" << type_to_string(right_type);
+    if (op == IR::ASSIGN) {
+        ss << result << " = " << left << ":" << type_to_string(left_type);
+    } else {
+        ss << result << " = " << left << ":" << type_to_string(left_type) << " "
+           << op_to_string(op) << " " << right << ":"
+           << type_to_string(right_type);
+    }
     return ss.str();
 }
 

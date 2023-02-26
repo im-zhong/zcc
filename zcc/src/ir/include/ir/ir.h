@@ -64,6 +64,7 @@ struct IR {
         F64,
 
         // operator
+        ASSIGN,
         ADD,
         SUB,
         MUL,
@@ -115,6 +116,9 @@ using InstructionPtr = std::shared_ptr<Instruction>;
 InstructionPtr make_binary_assignment(int op, std::string left, int lty,
                                       std::string right, int rty,
                                       std::string result);
+
+InstructionPtr make_assignment(std::string left, int left_type,
+                               std::string result);
 
 // 是在源代码中的位置
 struct Label {

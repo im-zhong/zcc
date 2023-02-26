@@ -77,7 +77,6 @@ namespace ir { class driver; }
     LOCAL_SYMBOL    "local_symbol"
     CONSTANT        "constant"
 
-%nterm <ir::Instruction> instruction
 %nterm <int> type
 %nterm <std::string> symbol
 
@@ -88,8 +87,6 @@ namespace ir { class driver; }
 %nterm <ir::CodeList> code_list
 
 // only for test
-
-%nterm <std::vector<ir::Instruction>> translation_unit instruction_list
 
 %%
 
@@ -123,6 +120,9 @@ code
     }
     | "identifier" ":" {
         $$ = ir::make_label($1);
+    }
+    | symbol "=" symbol ":" type {
+        $$ = ir::make_assignment($3, $5, $1);
     }
     ;
 
