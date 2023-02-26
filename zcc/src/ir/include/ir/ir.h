@@ -160,7 +160,7 @@ struct FnCall {
     std::optional<int> return_type;
     // 参数列表在函数声明和函数定义中是一样的 可以定义一个typedef
     // 因为后面会修改type的实现那
-    std::vector<TypedSymbol> parameter_list;
+    SymbolList parameter_list;
 
     std::string to_string() const;
 };
@@ -173,15 +173,29 @@ using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 
+struct FnDecl {
+    // 函数名字
+    std::string name;
+    // 函数返回类型
+    // 参数列表
+    SymbolList parameter_list;
+    std::optional<int> return_type;
+    // 函数体
+    CodeList body;
+
+    std::string to_string() const;
+};
+using FnDeclPtr = std::shared_ptr<FnDecl>;
+FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
+                      int return_type, CodeList body);
+FnDeclPtr make_noret_fndecl(std::string name, SymbolList parameter_list,
+                            CodeList body);
+
+using Decl = std::variant<FnDeclPtr>;
+using DeclList = std::vector<Decl>;
+DeclList make_empty_decl_list();
+
 // function就是另外一条赛道了
-// struct FnDecl {
-//     // 函数名字
-//     std::string name;
-//     // 函数返回类型
-//     int return_type;
-//     // 参数列表
-//     std::vector<TypedSymbol> parameter_list;
-// };
 
 // 为了让parser可以构造triple 我们需要提供一些函数
 // 给各种指令提供

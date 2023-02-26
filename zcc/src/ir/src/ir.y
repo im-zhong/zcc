@@ -98,6 +98,8 @@ namespace ir { class driver; }
 %nterm <ir::Code> code
 %nterm <ir::CodeList> code_list
 %nterm <ir::SymbolList> parameter_list
+%nterm <ir::Decl> decl
+%nterm <ir::DeclList> decl_list
 
 
 // only for test
@@ -113,9 +115,26 @@ namespace ir { class driver; }
 
 // o 最终生成的东西可以放在driver里面呀 完美 drv
 translation_unit
-    : code_list {
-        auto& code_list = drv.get_code_list();
-        code_list = std::move($1);
+    : decl_list {
+        auto& decl_list = drv.get_decl_list();
+        decl_list = std::move($1);
+    }
+    ;
+
+decl
+    : "fn" symbol "(" parameter_list ")" "->" type "{" code_list "}" {
+        $$ = ir::make_fndecl($2, $4, $7, $9);
+    }
+    | "fn" symbol "(" parameter_list ")" "{" code_list "}" {
+        $$ = ir::make_noret_fndecl($2, $4, $7);
+    }
+    ;
+
+decl_list
+    : { $$ = ir::make_empty_decl_list(); }
+    | decl_list decl {
+        $1.push_back($2);
+        $$ = std::move($1);
     }
     ;
 

@@ -31,7 +31,8 @@ class driver {
     int parse(const std::string& filename);
 
     yy::location& get_location();
-    CodeList& get_code_list();
+    // CodeList& get_code_list();
+    DeclList& get_decl_list();
 
     void dump() const;
 
@@ -40,6 +41,7 @@ class driver {
     yy::location location;
 
     // 现在也不能用这个了 必须使用variant
-    CodeList code_list;
+    // CodeList code_list;
+    DeclList decl_list;
 };
 } // namespace ir

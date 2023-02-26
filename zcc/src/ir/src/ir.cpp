@@ -4,6 +4,7 @@
 
 #include "ir/ir.h"
 #include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -199,5 +200,63 @@ std::string FnCall::to_string() const {
     }
     return ss.str();
 }
+
+FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
+                      int return_type, CodeList body) {
+    return std::make_shared<FnDecl>(FnDecl{
+        .name = name,
+        .parameter_list = parameter_list,
+        .return_type = return_type,
+        .body = body,
+    });
+}
+
+std::string symbol_list_to_string(const SymbolList& symbol_list) {
+    std::stringstream ss;
+    for (size_t i = 0; i < symbol_list.size(); i++) {
+        ss << symbol_list[i].symbol << ":"
+           << type_to_string(symbol_list[i].type);
+        if (i < symbol_list.size() - 1) {
+            ss << ", ";
+        }
+    }
+    return ss.str();
+}
+
+FnDeclPtr make_noret_fndecl(std::string name, SymbolList parameter_list,
+                            CodeList body) {
+    return std::make_shared<FnDecl>(FnDecl{
+        .name = name,
+        .parameter_list = parameter_list,
+        .body = body,
+    });
+}
+
+std::string FnDecl::to_string() const {
+    std::stringstream ss;
+    ss << "fn " << name << "(" << symbol_list_to_string(parameter_list) << ")";
+    // 检查是否拥有返回值
+    if (return_type) {
+        ss << " -> " << type_to_string(*return_type);
+    }
+    ss << " {\n";
+
+    // 输出函数体
+    for (const auto& v : body) {
+        // visit就是遍历variant的值
+        // 这里的auto推导的类型是 shared_ptr
+        // 然后to_string是一个模板函数 会调用类型的to_string
+        std::visit(
+            [&ss](auto code) {
+                ss << "    " << ir::to_string(*code) << std::endl;
+            },
+            v);
+    }
+
+    ss << "}";
+    return ss.str();
+}
+
+DeclList make_empty_decl_list() { return {}; }
 
 } // namespace ir
