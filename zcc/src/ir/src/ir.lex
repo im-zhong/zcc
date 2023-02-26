@@ -39,15 +39,16 @@ blank [ \t\r]
 }
 
  /* keyword */
- /* "global" { return GLOBAL; }
- "local" { return LOCAL; }
- "if" { return IF; }
- "then" { return THEN; }
- "else" { return ELSE; }
- "decl" { return DECL; }
- "fn" { return FN; }
- "struct" { return STRUCT; }
- "type" { return TYPE; } */
+"global"    { return yy::parser::make_GLOBAL(loc); }
+"local"     { return yy::parser::make_LOCAL(loc); }
+"if"        { return yy::parser::make_IF(loc); }
+"then"      { return yy::parser::make_THEN(loc); }
+"else"      { return yy::parser::make_ELSE(loc); }
+"decl"      { return yy::parser::make_DECL(loc); }
+"fn"        { return yy::parser::make_FN(loc); }
+"struct"    { return yy::parser::make_STRUCT(loc); }
+"type"      { return yy::parser::make_TYPE(loc); }
+"goto"      { return yy::parser::make_GOTO(loc); }
 
  /* basic type C++的枚举没法自动转换成 */
 "bool"  { return yy::parser::make_basic_type(IR::BOOL, loc); }

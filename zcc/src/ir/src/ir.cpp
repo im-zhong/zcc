@@ -35,6 +35,37 @@ LabelPtr make_label(std::string label) {
     return std::make_shared<Label>(Label{.label = label});
 }
 
+BranchPtr make_full_branch(std::string symbol, int type, std::string true_label,
+                           std::string false_label) {
+    return std::make_shared<Branch>(Branch{
+        .condition =
+            TypedSymbol{
+                .symbol = symbol,
+                .type = type,
+            },
+        .true_label = true_label,
+        .false_label = false_label,
+    });
+}
+
+BranchPtr make_half_branch(std::string symbol, int type,
+                           std::string true_label) {
+    return std::make_shared<Branch>(Branch{
+        .condition =
+            TypedSymbol{
+                .symbol = symbol,
+                .type = type,
+            },
+        .true_label = true_label,
+    });
+}
+
+BranchPtr make_goto(std::string label) {
+    return std::make_shared<Branch>(Branch{
+        .true_label = label,
+    });
+}
+
 std::string type_to_string(int type) {
     switch (type) {
     case IR::BOOL:
@@ -111,6 +142,21 @@ std::string Instruction::to_string() const {
 std::string Label::to_string() const {
     std::stringstream ss;
     ss << label << ":";
+    return ss.str();
+}
+
+std::string Branch::to_string() const {
+    std::stringstream ss;
+    if (condition) {
+        ss << "if " << condition->symbol << ":"
+           << type_to_string(condition->type) << " then " << true_label;
+        if (false_label) {
+            ss << " else " << *false_label;
+        }
+    } else {
+        // goto
+        ss << "goto " << true_label << std::endl;
+    }
     return ss.str();
 }
 

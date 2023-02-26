@@ -47,6 +47,16 @@ namespace ir { class driver; }
     comma ","
     left_parenthesis "("
     right_arenthesis ")"
+    IF "if"
+    THEN "then"
+    ELSE "else"
+    GLOBAL "global"
+    LOCAL "local"
+    DECL "decl"
+    FN "fn"
+    STRUCT "struct"
+    TYPE "type"
+    GOTO "goto"
     /* add "+"
     sub "-"
     mul "*"
@@ -86,6 +96,7 @@ namespace ir { class driver; }
 %nterm <ir::Code> code
 %nterm <ir::CodeList> code_list
 
+
 // only for test
 
 %%
@@ -123,6 +134,15 @@ code
     }
     | symbol "=" symbol ":" type {
         $$ = ir::make_assignment($3, $5, $1);
+    }
+    | "if" symbol ":" type "then" symbol "else" symbol {
+        $$ = ir::make_full_branch($2, $4, $6, $8);
+    } 
+    | "if" symbol ":" type "then" symbol {
+        $$ = ir::make_half_branch($2, $4, $6);
+    }
+    | "goto" symbol {
+        $$ = ir::make_goto($2);
     }
     ;
 

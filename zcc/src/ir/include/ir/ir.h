@@ -8,6 +8,7 @@
 // #include <format>
 #include <list>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -128,7 +129,26 @@ struct Label {
 using LabelPtr = std::shared_ptr<Label>;
 LabelPtr make_label(std::string label);
 
-using Code = std::variant<InstructionPtr, LabelPtr>;
+struct TypedSymbol {
+    std::string symbol;
+    int type;
+};
+
+struct Branch {
+    std::optional<TypedSymbol> condition;
+    std::string true_label;
+    std::optional<std::string> false_label;
+
+    std::string to_string() const;
+};
+using BranchPtr = std::shared_ptr<Branch>;
+BranchPtr make_full_branch(std::string symbol, int type, std::string true_label,
+                           std::string false_label);
+BranchPtr make_half_branch(std::string symbol, int type,
+                           std::string true_label);
+BranchPtr make_goto(std::string label);
+
+using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 
