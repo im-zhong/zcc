@@ -14,4 +14,8 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         drv.parse(argv[i]);
     }
+
+    // 然后输出
+    drv.dump();
+    return 0;
 }

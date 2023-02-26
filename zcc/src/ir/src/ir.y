@@ -81,6 +81,10 @@ namespace ir { class driver; }
 %nterm <int> type
 %nterm <std::string> symbol
 
+// only for test
+
+%nterm <std::vector<ir::Instruction>> translation_unit instruction_list
+
 %%
 
 /* translation_unit
@@ -90,10 +94,19 @@ namespace ir { class driver; }
     | translation_unit type_alias {}
     ; */
 
+// o 最终生成的东西可以放在driver里面呀 完美 drv
 translation_unit
-    : 
-    | translation_unit instruction {
-        // 在这里把instruction加入list中
+    : instruction_list {
+        auto& list = drv.get_instruction_list();
+        list = $1;
+    }
+    ;
+
+instruction_list
+    : { $$ = ir::make_empty_instruction_list(); }
+    | instruction_list instruction {
+        $1.push_back($2);
+        $$ = std::move($1);
     }
     ;
 

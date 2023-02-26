@@ -3,8 +3,10 @@
 // ir driver
 #pragma once
 
+#include "ir.h"
 #include "parser.hpp"
 #include <string>
+#include <vector>
 
 namespace ir {
 class driver;
@@ -28,9 +30,13 @@ class driver {
     int parse(const std::string& filename);
 
     yy::location& get_location();
+    std::vector<Instruction>& get_instruction_list();
+
+    void dump() const;
 
   private:
     std::string filename;
     yy::location location;
+    std::vector<Instruction> instruction_list;
 };
 } // namespace ir

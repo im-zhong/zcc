@@ -21,4 +21,14 @@ int driver::parse(const std::string& filename) {
 
 yy::location& driver::get_location() { return this->location; }
 
+std::vector<Instruction>& driver::get_instruction_list() {
+    return this->instruction_list;
+}
+
+void driver::dump() const {
+    for (const auto& i : this->instruction_list) {
+        std::cout << i->to_string() << std::endl;
+    }
+}
+
 } // namespace ir

@@ -4,8 +4,11 @@
 
 #pragma once
 
+// 我服了 23年了 c++20 还没支持完呢。。。
+// #include <format>
 #include <list>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -45,8 +48,6 @@ struct IR {
         F32,
         F64,
 
-        BITNOT,
-
         // operator
         ADD,
         SUB,
@@ -74,6 +75,9 @@ struct IR {
     };
 };
 
+std::string type_to_string(int type);
+std::string op_to_string(int op);
+
 class _Symbol;
 using Symbol = std::shared_ptr<_Symbol>;
 
@@ -85,6 +89,13 @@ struct _Instruction {
     // 这个名字太长了，可以typedef using 一下
     // Address left;
     // Address right;
+    std::string left;
+    int left_type;
+    std::string right;
+    int right_type;
+    std::string result;
+
+    std::string to_string() const;
 };
 
 struct BinaryAssignemt {};
@@ -96,6 +107,10 @@ using Instruction = std::shared_ptr<_Instruction>;
 
 struct _Instruction;
 using Address = std::variant<Symbol, Instruction>;
+
+using InstructionList = std::vector<Instruction>;
+
+std::vector<Instruction> make_empty_instruction_list();
 
 // 在构造指令的时候 需要四个参数
 // 但是在保存的时候 却只需要三个参数

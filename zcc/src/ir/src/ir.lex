@@ -4,7 +4,7 @@
  * IR scanner
  */
 
-%option noyywrap nounput noinput nodefault batch debug
+%option noyywrap nounput noinput nodefault batch
 
 %{
 #include "ir/driver.h"
