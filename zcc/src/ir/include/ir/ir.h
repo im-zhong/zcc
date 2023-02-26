@@ -16,7 +16,22 @@
 
 // 还需要一个symbol table
 
+// 放在外面简单一点 大家都可以用
+template <typename T>
+concept to_string_able = requires(T&& t) {
+                             // 这个类型必须定义了to_string
+                             std::forward<T>(t).to_string();
+                             // 并且这个函数必须返回 std::string
+                             {
+                                 std::forward<T>(t).to_string()
+                                 } -> std::same_as<std::string>;
+                         };
+
 namespace ir {
+
+template <to_string_able T> auto to_string(T&& t) -> std::string {
+    return std::forward<T>(t).to_string();
+}
 
 // todo
 // 这个东西需要保存类型
@@ -27,7 +42,7 @@ Type make_pointer_type();
 
 // 定义一些常量, terminal
 struct IR {
-    enum Code {
+    enum Coding {
         // keyword
         GLOBAL = 256,
         LOCAL,
@@ -78,17 +93,16 @@ struct IR {
 std::string type_to_string(int type);
 std::string op_to_string(int op);
 
-class _Symbol;
-using Symbol = std::shared_ptr<_Symbol>;
+// struct Code {
+//     virtual std::string to_string() const = 0;
+// };
+// using CodePtr = std::shared_ptr<Code>;
 
 // 不行 对于一些常用的指针类型 可以使用using std::shared_ptr<Symbol>
 // three address code
 // 来自龙书 indirect triple
-struct _Instruction {
+struct Instruction {
     int op;
-    // 这个名字太长了，可以typedef using 一下
-    // Address left;
-    // Address right;
     std::string left;
     int left_type;
     std::string right;
@@ -97,30 +111,22 @@ struct _Instruction {
 
     std::string to_string() const;
 };
-
-struct BinaryAssignemt {};
+using InstructionPtr = std::shared_ptr<Instruction>;
+InstructionPtr make_binary_assignment(int op, std::string left, int lty,
+                                      std::string right, int rty,
+                                      std::string result);
 
 // 是在源代码中的位置
-struct Label {};
+struct Label {
+    std::string label;
+    std::string to_string() const;
+};
+using LabelPtr = std::shared_ptr<Label>;
+LabelPtr make_label(std::string label);
 
-using Instruction = std::shared_ptr<_Instruction>;
-
-struct _Instruction;
-using Address = std::variant<Symbol, Instruction>;
-
-using InstructionList = std::vector<Instruction>;
-
-std::vector<Instruction> make_empty_instruction_list();
-
-// 在构造指令的时候 需要四个参数
-// 但是在保存的时候 却只需要三个参数
-Instruction make_instruction();
-
-Instruction make_binary_assignment(int op, std::string left, int lty,
-                                   std::string right, int rty,
-                                   std::string result);
-
-std::shared_ptr<Instruction> make_unary_assignment(int op, Address num);
+using Code = std::variant<InstructionPtr, LabelPtr>;
+using CodeList = std::vector<Code>;
+CodeList make_empty_code_list();
 
 // 为了让parser可以构造triple 我们需要提供一些函数
 // 给各种指令提供
@@ -129,19 +135,5 @@ std::shared_ptr<Instruction> make_unary_assignment(int op, Address num);
 // 同时还有一个符号表
 // 同时还有一些函数
 // 总之就是提供一些cgen需要用到的环境，然后cgen来根据这些结构生成代码
-
-class IRParser {
-  public:
-    // 和 bison 一样
-    // 我们只需要指定一个文件 或者指定一个输入流
-    // 就可以从中读取文件
-    // 但是讲道理 我们会使用bison来做的话 我们其实只需要向instructions中添加
-    // 指令即可
-
-  private:
-    std::unordered_map<std::string, std::shared_ptr<Symbol>> symbol_table;
-    std::unordered_map<std::string, std::shared_ptr<Instruction>> labels;
-    std::vector<std::shared_ptr<Instruction>> instructions;
-};
 
 } // namespace ir

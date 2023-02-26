@@ -81,6 +81,12 @@ namespace ir { class driver; }
 %nterm <int> type
 %nterm <std::string> symbol
 
+%token <std::string>
+    IDENTIFIER "identifier"
+
+%nterm <ir::Code> code
+%nterm <ir::CodeList> code_list
+
 // only for test
 
 %nterm <std::vector<ir::Instruction>> translation_unit instruction_list
@@ -96,17 +102,27 @@ namespace ir { class driver; }
 
 // o 最终生成的东西可以放在driver里面呀 完美 drv
 translation_unit
-    : instruction_list {
-        auto& list = drv.get_instruction_list();
-        list = $1;
+    : code_list {
+        auto& code_list = drv.get_code_list();
+        code_list = std::move($1);
     }
     ;
 
-instruction_list
-    : { $$ = ir::make_empty_instruction_list(); }
-    | instruction_list instruction {
+code_list
+    : { $$ = ir::make_empty_code_list(); }
+    | code_list code {
         $1.push_back($2);
         $$ = std::move($1);
+    }
+    ;
+
+code
+    : symbol "=" symbol ":" type "op" symbol ":" type {
+        // 组织成一个instruction
+        $$ = ir::make_binary_assignment($6, $3, $5, $7, $9, $1);
+    }
+    | "identifier" ":" {
+        $$ = ir::make_label($1);
     }
     ;
 
@@ -151,19 +167,30 @@ function_body
     | function_body instruction {}
     ; */
 
-instruction
+ /* instruction
     : symbol "=" symbol ":" type "op" symbol ":" type {
         // 组织成一个instruction
         $$ = ir::make_binary_assignment($6, $3, $5, $7, $9, $1);
     }
-    /* | unary_assignment {}
+    | "identifier" ":" {
+        // label指示了一个位置 是当前的指令条数
+        // 指令索引 对吧
+        // 其实是下一条指令
+        // 如果有两个连续的label我该怎么办呢??
+        // 所以最好还是把label记录下来
+        // 现在应该换一个新的类了 找一个新的基类
+        // CodeLine
+        // Instruction -> CodeLine
+        // Label -> CodeLine
+        // FnCall -> CodeLine
+    }
+    /*
     | call {}
     | assignment {}
     | branch {}
     | jump {}
-    | return {}
-    | label {} */
-    ;
+    | return {} */
+
 
 symbol
     : "global_symbol" { $$ = $1; }

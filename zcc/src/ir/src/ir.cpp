@@ -10,18 +10,22 @@
 
 namespace ir {
 // todo
-Instruction make_binary_assignment(int op, std::string left, int left_type,
-                                   std::string right, int right_type,
-                                   std::string result) {
-    return std::make_shared<_Instruction>(_Instruction{.op = op,
-                                                       .left = left,
-                                                       .left_type = left_type,
-                                                       .right = right,
-                                                       .right_type = right_type,
-                                                       .result = result});
+InstructionPtr make_binary_assignment(int op, std::string left, int left_type,
+                                      std::string right, int right_type,
+                                      std::string result) {
+    return std::make_shared<Instruction>(Instruction{.op = op,
+                                                     .left = left,
+                                                     .left_type = left_type,
+                                                     .right = right,
+                                                     .right_type = right_type,
+                                                     .result = result});
 }
 
-std::vector<Instruction> make_empty_instruction_list() { return {}; }
+CodeList make_empty_code_list() { return {}; }
+
+LabelPtr make_label(std::string label) {
+    return std::make_shared<Label>(Label{.label = label});
+}
 
 std::string type_to_string(int type) {
     switch (type) {
@@ -83,10 +87,16 @@ std::string op_to_string(int op) {
     }
 }
 
-std::string _Instruction::to_string() const {
+std::string Instruction::to_string() const {
     std::stringstream ss;
     ss << result << " = " << left << ":" << type_to_string(left_type) << " "
        << op_to_string(op) << " " << right << ":" << type_to_string(right_type);
+    return ss.str();
+}
+
+std::string Label::to_string() const {
+    std::stringstream ss;
+    ss << label << ":";
     return ss.str();
 }
 

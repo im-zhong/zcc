@@ -6,6 +6,7 @@
 #include "ir.h"
 #include "parser.hpp"
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ir {
@@ -30,13 +31,15 @@ class driver {
     int parse(const std::string& filename);
 
     yy::location& get_location();
-    std::vector<Instruction>& get_instruction_list();
+    CodeList& get_code_list();
 
     void dump() const;
 
   private:
     std::string filename;
     yy::location location;
-    std::vector<Instruction> instruction_list;
+
+    // 现在也不能用这个了 必须使用variant
+    CodeList code_list;
 };
 } // namespace ir

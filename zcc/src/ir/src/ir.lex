@@ -97,6 +97,10 @@ blank [ \t\r]
     return yy::parser::make_CONSTANT(yytext, loc);
 }
 
+{ID} {
+    return yy::parser::make_IDENTIFIER(yytext, loc);
+}
+
  /* binary operator; compare operator */
 "+"     { return yy::parser::make_OP(IR::ADD, loc); }
 "-"     { return yy::parser::make_OP(IR::SUB, loc); }
