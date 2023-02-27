@@ -4,11 +4,18 @@
 
 // 一趟解析结束之后应该生成一份 符号表 类型表 指令表 标号表
 
+// doctest 还必须加上这个宏 不然通不过编译
+// #define DOCTEST_CONFIG_IMPLEMENT
+
 #include "ir/driver.h"
 #include "ir/ir.h"
 #include "ir/parser.hpp"
 #include "ir/type.h"
+// #include "util/doctest.h" // 这东西不仅没提供conan2 还有bug。。。 算了
+// 还是换googletest吧
 #include <cassert>
+#include <gtest/gtest.h>
+#include <optional>
 #include <string>
 
 // 可以在这里写测试函数呀
@@ -16,9 +23,20 @@ void test_type() {
     using ir::IR;
     using namespace std::string_literals;
 
+    // assert无法满足测试的需求 换用另外一个测试框架
+    // doctest
     auto pi = ir::make_pointer_type(make_basic_type(IR::I32));
-    assert(ir::to_string(*pi) == "*i32"s);
-    assert(ir::type_to_string(pi) == "*i32"s);
+    EXPECT_EQ(ir::to_string(*pi), "*i32"s);
+    EXPECT_EQ(ir::type_to_string(pi), "*i32"s);
+
+    // test function type
+    // fn(bool, *i32)->i32
+    auto type_list = ir::make_empty_type_list();
+    type_list.push_back(ir::make_basic_type(IR::BOOL));
+    type_list.push_back(pi);
+    auto fn = ir::make_fn_type(type_list, ir::make_basic_type(IR::I32));
+    EXPECT_EQ(ir::to_string(*fn), "fn(bool, *i32)->i32"s);
+    EXPECT_EQ(ir::type_to_string(fn), "fn(bool, *i32)->i32"s);
 }
 
 void test() { test_type(); }

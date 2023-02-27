@@ -20,6 +20,10 @@ class zccRecipe(ConanFile):
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*"
 
+    def requirements(self):
+        self.requires("fmt/9.1.0")
+        self.requires("gtest/cci.20210126")
+
     def layout(self):
         cmake_layout(self)
 
@@ -37,5 +41,3 @@ class zccRecipe(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install()
-
-    

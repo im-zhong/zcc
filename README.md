@@ -30,3 +30,5 @@ Zhong's C Compiler
 
 # emit llvm ir
 `clang -S -emit-llvm src.c`
+
+# 结果conan2.0还是不行 大部分conancenter里面的recipe都是1.x 2.0改了api 没法用了...

@@ -87,25 +87,6 @@ FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
 }
 
 std::string type_to_string(Type type) {
-    // switch (type) {
-    // case IR::BOOL:
-    //     return "bool";
-    // case IR::I8:
-    //     return "i8";
-    // case IR::I16:
-    //     return "i16";
-    // case IR::I32:
-    //     return "i32";
-    // case IR::I64:
-    //     return "i64";
-    // case IR::F32:
-    //     return "f32";
-    // case IR::F64:
-    //     return "f64";
-    // default:
-    //     exit(EXIT_FAILURE);
-    // }
-
     std::stringstream ss;
     std::visit([&ss](auto type) { ss << ir::to_string(*type); }, type);
     return ss.str();
