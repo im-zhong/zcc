@@ -13,8 +13,8 @@ namespace ir {
 
 auto make_empty_symbol_list() -> SymbolList { return {}; }
 // todo
-InstructionPtr make_binary_assignment(int op, std::string left, int left_type,
-                                      std::string right, int right_type,
+InstructionPtr make_binary_assignment(int op, std::string left, Type left_type,
+                                      std::string right, Type right_type,
                                       std::string result) {
     return std::make_shared<Instruction>(Instruction{.op = op,
                                                      .left = left,
@@ -24,7 +24,7 @@ InstructionPtr make_binary_assignment(int op, std::string left, int left_type,
                                                      .result = result});
 }
 
-InstructionPtr make_assignment(std::string left, int left_type,
+InstructionPtr make_assignment(std::string left, Type left_type,
                                std::string result) {
     return std::make_shared<Instruction>(Instruction{.op = IR::ASSIGN,
                                                      .left = left,
@@ -38,8 +38,8 @@ LabelPtr make_label(std::string label) {
     return std::make_shared<Label>(Label{.label = label});
 }
 
-BranchPtr make_full_branch(std::string symbol, int type, std::string true_label,
-                           std::string false_label) {
+BranchPtr make_full_branch(std::string symbol, Type type,
+                           std::string true_label, std::string false_label) {
     return std::make_shared<Branch>(Branch{
         .condition =
             TypedSymbol{
@@ -51,7 +51,7 @@ BranchPtr make_full_branch(std::string symbol, int type, std::string true_label,
     });
 }
 
-BranchPtr make_half_branch(std::string symbol, int type,
+BranchPtr make_half_branch(std::string symbol, Type type,
                            std::string true_label) {
     return std::make_shared<Branch>(Branch{
         .condition =
@@ -77,7 +77,7 @@ FnCallPtr make_fncall(std::string name, SymbolList parameter_list) {
 }
 
 FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
-                                 std::string result, int return_type) {
+                                 std::string result, Type return_type) {
     return std::make_shared<FnCall>(FnCall{
         .name = name,
         .result = result,
@@ -86,25 +86,29 @@ FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
     });
 }
 
-std::string type_to_string(int type) {
-    switch (type) {
-    case IR::BOOL:
-        return "bool";
-    case IR::I8:
-        return "i8";
-    case IR::I16:
-        return "i16";
-    case IR::I32:
-        return "i32";
-    case IR::I64:
-        return "i64";
-    case IR::F32:
-        return "f32";
-    case IR::F64:
-        return "f64";
-    default:
-        exit(EXIT_FAILURE);
-    }
+std::string type_to_string(Type type) {
+    // switch (type) {
+    // case IR::BOOL:
+    //     return "bool";
+    // case IR::I8:
+    //     return "i8";
+    // case IR::I16:
+    //     return "i16";
+    // case IR::I32:
+    //     return "i32";
+    // case IR::I64:
+    //     return "i64";
+    // case IR::F32:
+    //     return "f32";
+    // case IR::F64:
+    //     return "f64";
+    // default:
+    //     exit(EXIT_FAILURE);
+    // }
+
+    std::stringstream ss;
+    std::visit([&ss](auto type) { ss << ir::to_string(*type); }, type);
+    return ss.str();
 }
 
 std::string op_to_string(int op) {
@@ -202,7 +206,7 @@ std::string FnCall::to_string() const {
 }
 
 FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
-                      int return_type, CodeList body) {
+                      Type return_type, CodeList body) {
     return std::make_shared<FnDecl>(FnDecl{
         .name = name,
         .parameter_list = parameter_list,

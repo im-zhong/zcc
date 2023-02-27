@@ -52,22 +52,22 @@ blank [ \t\r]
 "call"      { return yy::parser::make_CALL(loc); }
 
  /* basic type C++的枚举没法自动转换成 */
-"bool"  { return yy::parser::make_basic_type(IR::BOOL, loc); }
-"i8"    { return yy::parser::make_basic_type(IR::I8, loc); }
-"i16"   { return yy::parser::make_basic_type(IR::I16, loc); }
-"i32"   { return yy::parser::make_basic_type(IR::I32, loc); }
-"i64"   { return yy::parser::make_basic_type(IR::I64, loc); }
-"f32"   { return yy::parser::make_basic_type(IR::F32, loc); }
-"f64"   { return yy::parser::make_basic_type(IR::F64, loc); }
+"bool"  { return yy::parser::make_BASIC_TYPE(IR::BOOL, loc); }
+"i8"    { return yy::parser::make_BASIC_TYPE(IR::I8, loc); }
+"i16"   { return yy::parser::make_BASIC_TYPE(IR::I16, loc); }
+"i32"   { return yy::parser::make_BASIC_TYPE(IR::I32, loc); }
+"i64"   { return yy::parser::make_BASIC_TYPE(IR::I64, loc); }
+"f32"   { return yy::parser::make_BASIC_TYPE(IR::F32, loc); }
+"f64"   { return yy::parser::make_BASIC_TYPE(IR::F64, loc); }
 
  /* seperator */
-":"     { return yy::parser::make_colon(loc); }
-"{"     { return yy::parser::make_left_brace(loc); }
-"}"     { return yy::parser::make_right_brace(loc); }
-","     { return yy::parser::make_comma(loc); }
-"="     { return yy::parser::make_assign(loc); }
-"("     { return yy::parser::make_left_parenthesis(loc); }
-")"     { return yy::parser::make_right_arenthesis(loc); }
+":"     { return yy::parser::make_COLON(loc); }
+"{"     { return yy::parser::make_LEFT_BRACE(loc); }
+"}"     { return yy::parser::make_RIGHT_BRACE(loc); }
+","     { return yy::parser::make_COMMA(loc); }
+"="     { return yy::parser::make_ASSIGN(loc); }
+"("     { return yy::parser::make_LEFT_PARENTHESIS(loc); }
+")"     { return yy::parser::make_RIGHT_PARENTHESIS(loc); }
 "->"    { return yy::parser::make_ARROW(loc); }
 
  /* cast */
@@ -107,7 +107,7 @@ blank [ \t\r]
  /* binary operator; compare operator */
 "+"     { return yy::parser::make_OP(IR::ADD, loc); }
 "-"     { return yy::parser::make_OP(IR::SUB, loc); }
-"*"     { return yy::parser::make_OP(IR::MUL, loc); }
+"*"     { return yy::parser::make_ASTERISK(loc); }
 "/"     { return yy::parser::make_OP(IR::DIV, loc); }
 "%"     { return yy::parser::make_OP(IR::MOD, loc); }
 "&"     { return yy::parser::make_OP(IR::BITAND, loc); }

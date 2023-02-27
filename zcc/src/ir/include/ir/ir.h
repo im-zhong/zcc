@@ -6,6 +6,7 @@
 
 // 我服了 23年了 c++20 还没支持完呢。。。
 // #include <format>
+#include "type.h"
 #include <list>
 #include <memory>
 #include <optional>
@@ -33,13 +34,6 @@ namespace ir {
 template <to_string_able T> auto to_string(T&& t) -> std::string {
     return std::forward<T>(t).to_string();
 }
-
-// todo
-// 这个东西需要保存类型
-struct Type {};
-Type make_basic_type(int basic_type);
-Type make_struct_type();
-Type make_pointer_type();
 
 // 定义一些常量, terminal
 struct IR {
@@ -92,7 +86,7 @@ struct IR {
     };
 };
 
-std::string type_to_string(int type);
+std::string type_to_string(Type type);
 std::string op_to_string(int op);
 
 // struct Code {
@@ -106,19 +100,19 @@ std::string op_to_string(int op);
 struct Instruction {
     int op;
     std::string left;
-    int left_type;
+    Type left_type;
     std::string right;
-    int right_type;
+    Type right_type;
     std::string result;
 
     std::string to_string() const;
 };
 using InstructionPtr = std::shared_ptr<Instruction>;
-InstructionPtr make_binary_assignment(int op, std::string left, int lty,
-                                      std::string right, int rty,
+InstructionPtr make_binary_assignment(int op, std::string left, Type lty,
+                                      std::string right, Type rty,
                                       std::string result);
 
-InstructionPtr make_assignment(std::string left, int left_type,
+InstructionPtr make_assignment(std::string left, Type left_type,
                                std::string result);
 
 // 是在源代码中的位置
@@ -131,7 +125,7 @@ LabelPtr make_label(std::string label);
 
 struct TypedSymbol {
     std::string symbol;
-    int type;
+    Type type;
 };
 
 using SymbolList = std::vector<TypedSymbol>;
@@ -145,9 +139,9 @@ struct Branch {
     std::string to_string() const;
 };
 using BranchPtr = std::shared_ptr<Branch>;
-BranchPtr make_full_branch(std::string symbol, int type, std::string true_label,
-                           std::string false_label);
-BranchPtr make_half_branch(std::string symbol, int type,
+BranchPtr make_full_branch(std::string symbol, Type type,
+                           std::string true_label, std::string false_label);
+BranchPtr make_half_branch(std::string symbol, Type type,
                            std::string true_label);
 BranchPtr make_goto(std::string label);
 
@@ -157,7 +151,7 @@ struct FnCall {
     // 返回符号 但是可选
     std::optional<std::string> result;
     // 返回类型 可选
-    std::optional<int> return_type;
+    std::optional<Type> return_type;
     // 参数列表在函数声明和函数定义中是一样的 可以定义一个typedef
     // 因为后面会修改type的实现那
     SymbolList parameter_list;
@@ -167,7 +161,7 @@ struct FnCall {
 using FnCallPtr = std::shared_ptr<FnCall>;
 FnCallPtr make_fncall(std::string name, SymbolList parameter_list);
 FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
-                                 std::string result, int return_type);
+                                 std::string result, Type return_type);
 
 using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr>;
 using CodeList = std::vector<Code>;
@@ -179,7 +173,7 @@ struct FnDecl {
     // 函数返回类型
     // 参数列表
     SymbolList parameter_list;
-    std::optional<int> return_type;
+    std::optional<Type> return_type;
     // 函数体
     CodeList body;
 
@@ -187,7 +181,7 @@ struct FnDecl {
 };
 using FnDeclPtr = std::shared_ptr<FnDecl>;
 FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
-                      int return_type, CodeList body);
+                      Type return_type, CodeList body);
 FnDeclPtr make_noret_fndecl(std::string name, SymbolList parameter_list,
                             CodeList body);
 

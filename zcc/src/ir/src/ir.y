@@ -40,13 +40,13 @@ namespace ir { class driver; }
 // 防止token命名冲突 加上前缀
 %define api.token.prefix {TOKEN_}
 %token
-    assign "="
-    colon ":"
-    left_brace "{"
-    right_brace "}"
-    comma ","
-    left_parenthesis "("
-    right_arenthesis ")"
+    ASSIGN "="
+    COLON ":"
+    LEFT_BRACE "{"
+    RIGHT_BRACE "}"
+    COMMA ","
+    LEFT_PARENTHESIS "("
+    RIGHT_PARENTHESIS ")"
     ARROW "->"
     IF "if"
     THEN "then"
@@ -59,6 +59,7 @@ namespace ir { class driver; }
     TYPE "type"
     GOTO "goto"
     CALL "call"
+    ASTERISK "*"
     /* add "+"
     sub "-"
     mul "*"
@@ -80,7 +81,7 @@ namespace ir { class driver; }
 
 // 如果我这么写了 他会生成什么呢
 // yy::parser::make_basic_type(int, loc);
-%token <int> basic_type
+%token <int> BASIC_TYPE "basic_type"
 // yy::parser::make_op(int, loc)
 %token <int> OP "op"
 // non terminal 就不会生成东西了, 现在type不表示任何东西 所以暂时用int代替
@@ -89,7 +90,6 @@ namespace ir { class driver; }
     LOCAL_SYMBOL    "local_symbol"
     CONSTANT        "constant"
 
-%nterm <int> type
 %nterm <std::string> symbol
 
 %token <std::string>
@@ -100,7 +100,7 @@ namespace ir { class driver; }
 %nterm <ir::SymbolList> parameter_list
 %nterm <ir::Decl> decl
 %nterm <ir::DeclList> decl_list
-
+%nterm <ir::Type> type
 
 // only for test
 
@@ -150,6 +150,9 @@ code
     : symbol "=" symbol ":" type "op" symbol ":" type {
         // 组织成一个instruction
         $$ = ir::make_binary_assignment($6, $3, $5, $7, $9, $1);
+    }
+    | symbol "=" symbol ":" type "*" symbol ":" type {
+        $$ = ir::make_binary_assignment(ir::IR::MUL, $3, $5, $7, $9, $1);
     }
     | "identifier" ":" {
         $$ = ir::make_label($1);
@@ -205,8 +208,14 @@ parameter_list
     ; */
 
 type
-    : basic_type {
-        $$ = $1;
+    : "basic_type" {
+        // $$ = $1;
+        $$ = ir::make_basic_type($1);
+        // std::cout << "rule basic type\n";
+    }
+    | "*" type {
+        $$ = ir::make_pointer_type($2);
+        // std::cout << "rule pointer type\n";
     }
     /* | struct_type {}
     | '*' type {} */
