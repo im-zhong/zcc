@@ -104,17 +104,7 @@ namespace ir { class driver; }
 %nterm <ir::Type> type
 %nterm <ir::TypeList> type_list
 
-// only for test
-
 %%
-
-/* translation_unit
-    :
-    | translation_unit declaration {}
-    | translation_unit definition {}
-    | translation_unit type_alias {}
-    ; */
-
 // o 最终生成的东西可以放在driver里面呀 完美 drv
 translation_unit
     : decl_list {
@@ -129,6 +119,9 @@ decl
     }
     | "fn" symbol "(" parameter_list ")" "{" code_list "}" {
         $$ = ir::make_noret_fndecl($2, $4, $7);
+    }
+    | "struct" "identifier" "{" type_list "}" {
+        $$ = ir::make_struct_decl($2, $4);
     }
     ;
 
@@ -231,8 +224,9 @@ type
     | "fn" "(" type_list ")" "->" type {
         $$ = ir::make_fn_type($3, $6);
     }
-    /* | struct_type {}
-    | '*' type {} */
+    | "identifier" {
+        $$ = ir::make_struct_type($1);
+    }
     ;
 
 type_list
@@ -248,93 +242,11 @@ type_list
     }
     ;
 
-/* struct_type
-    : STRUCT '{' type_list '}'
-    ;
-
-type_list
-    :
-    | type_list ',' type {}
-    ;
-
-parameter_list
-    : {}
-    | parameter_list ',' parameter {}
-    ;
-
-function_body
-    : {}
-    | function_body instruction {}
-    ; */
-
- /* instruction
-    : symbol "=" symbol ":" type "op" symbol ":" type {
-        // 组织成一个instruction
-        $$ = ir::make_binary_assignment($6, $3, $5, $7, $9, $1);
-    }
-    | "identifier" ":" {
-        // label指示了一个位置 是当前的指令条数
-        // 指令索引 对吧
-        // 其实是下一条指令
-        // 如果有两个连续的label我该怎么办呢??
-        // 所以最好还是把label记录下来
-        // 现在应该换一个新的类了 找一个新的基类
-        // CodeLine
-        // Instruction -> CodeLine
-        // Label -> CodeLine
-        // FnCall -> CodeLine
-    }
-    /*
-    | call {}
-    | assignment {}
-    | branch {}
-    | jump {}
-    | return {} */
-
-
 symbol
     : "global_symbol" { $$ = $1; }
     | "local_symbol" { $$ = $1; }
     | "constant" { $$ = $1; }
     ;
-
-// 这个也包含 condition_assignment
-/* binary_assignment
-    : symbol '=' typed_symbol BINARY_OP typed_symbol {}
-    ; */
-
-/* unary_assignment
-    : symbol '=' UNARY_OP typed_symbol {}
-    ;
-
-assignment
-    : symbol '=' typed_symbol {}
-    ;
-
-branch
-    : IF typed_symbol THEN label ELSE label {}
-    ;
-
-jump
-    : JMP label {}
-    ;
-
-return
-    : RET {}
-    ;
-
-label
-    : ID ':' {}
-    ;
-
-// parameter 形参 在函数定义中出现
-// argument 实参 在函数调用中出现
-call
-    : CALL GLOBAL_SYMBOL '(' argument_list ')' {}
-    | symbol '=' CALL GLOBAL_SYMBOL '(' argument_list ')' ARROW type {}
-    ;
-
-*/
 %%
 
 // 必须自己实现一个error

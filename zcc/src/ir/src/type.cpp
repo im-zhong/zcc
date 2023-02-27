@@ -17,9 +17,8 @@ BasicTypePtr make_basic_type(int type) {
     return std::make_shared<BasicType>(BasicType{.type = type});
 }
 
-StructTypePtr make_struct_type(TypeList fields) {
-    return std::make_shared<StructType>(
-        StructType{.fields = std::move(fields)});
+StructTypePtr make_struct_type(std::string name) {
+    return std::make_shared<StructType>(StructType{.name = name});
 }
 
 FnTypePtr make_fn_type(TypeList parameter_type,
@@ -57,7 +56,7 @@ std::string BasicType::to_string() const {
     }
 }
 
-std::string StructType::to_string() const { return "todo"; }
+std::string StructType::to_string() const { return name; }
 
 std::string FnType::to_string() const {
     std::stringstream ss;

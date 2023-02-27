@@ -3,6 +3,7 @@
 // ir
 
 #include "ir/ir.h"
+#include "ir/type.h"
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -258,6 +259,26 @@ std::string Return::to_string() const {
     } else {
         ss << "ret none";
     }
+    return ss.str();
+}
+
+StructDeclPtr make_struct_decl(std::string name, TypeList fields) {
+    return std::make_shared<StructDecl>(StructDecl{
+        .name = name,
+        .fields = fields,
+    });
+}
+
+std::string StructDecl::to_string() const {
+    std::stringstream ss;
+    ss << "struct " << name << " {\n";
+    for (size_t i = 0; i < fields.size(); i++) {
+        ss << "    " << type_to_string(fields[i]);
+        if (i < fields.size() - 1) {
+            ss << ",\n";
+        }
+    }
+    ss << "\n}";
     return ss.str();
 }
 

@@ -194,7 +194,17 @@ FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
 FnDeclPtr make_noret_fndecl(std::string name, SymbolList parameter_list,
                             CodeList body);
 
-using Decl = std::variant<FnDeclPtr>;
+struct StructDecl {
+    // type list
+    std::string name;
+    TypeList fields;
+
+    std::string to_string() const;
+};
+using StructDeclPtr = std::shared_ptr<StructDecl>;
+StructDeclPtr make_struct_decl(std::string name, TypeList fields);
+
+using Decl = std::variant<FnDeclPtr, StructDeclPtr>;
 using DeclList = std::vector<Decl>;
 DeclList make_empty_decl_list();
 

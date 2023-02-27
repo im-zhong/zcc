@@ -45,11 +45,10 @@ BasicTypePtr make_basic_type(int type);
 struct StructType {
     // type list
     std::string name;
-    TypeList fields;
 
     std::string to_string() const;
 };
-StructTypePtr make_struct_type(TypeList fields);
+StructTypePtr make_struct_type(std::string name);
 
 struct FnType {
     TypeList parameter_type;
