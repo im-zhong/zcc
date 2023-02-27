@@ -123,6 +123,9 @@ decl
     | "struct" "identifier" "{" type_list "}" {
         $$ = ir::make_struct_decl($2, $4);
     }
+    | "global" symbol "=" symbol ":" type {
+        $$ = ir::make_global_decl($2, $4, $6);
+    }
     ;
 
 decl_list

@@ -282,4 +282,16 @@ std::string StructDecl::to_string() const {
     return ss.str();
 }
 
+GlobalDeclPtr make_global_decl(std::string name, std::string value, Type type) {
+    return std::make_shared<GlobalDecl>(GlobalDecl{
+        .name = name,
+        .value = value,
+        .type = type,
+    });
+}
+
+std::string GlobalDecl::to_string() const {
+    return "global " + name + " = " + value + ":" + type_to_string(type);
+}
+
 } // namespace ir

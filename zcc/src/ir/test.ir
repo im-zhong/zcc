@@ -33,3 +33,4 @@ struct test {
     *test,
     *test
 }
+global @symbol = %0:i32

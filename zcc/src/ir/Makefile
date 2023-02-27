@@ -11,9 +11,7 @@ parser: src/ir.y
 
 .PHONY: clean
 clean:
-	rm include/ir/location.hh include/ir/parser.hpp src/parser.cpp src/scanner.cpp
-	rm result.ir
-	rm test_ir
+	rm include/ir/location.hh include/ir/parser.hpp src/parser.cpp src/scanner.cpp result.ir test_ir
 
 .PHONY: test
 test:

@@ -204,7 +204,17 @@ struct StructDecl {
 using StructDeclPtr = std::shared_ptr<StructDecl>;
 StructDeclPtr make_struct_decl(std::string name, TypeList fields);
 
-using Decl = std::variant<FnDeclPtr, StructDeclPtr>;
+struct GlobalDecl {
+    std::string name;
+    std::string value;
+    Type type;
+
+    std::string to_string() const;
+};
+using GlobalDeclPtr = std::shared_ptr<GlobalDecl>;
+GlobalDeclPtr make_global_decl(std::string name, std::string value, Type type);
+
+using Decl = std::variant<FnDeclPtr, StructDeclPtr, GlobalDeclPtr>;
 using DeclList = std::vector<Decl>;
 DeclList make_empty_decl_list();
 
