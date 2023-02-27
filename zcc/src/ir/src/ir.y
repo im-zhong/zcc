@@ -56,7 +56,6 @@ namespace ir { class driver; }
     DECL "decl"
     FN "fn"
     STRUCT "struct"
-    TYPE "type"
     GOTO "goto"
     CALL "call"
     ASTERISK "*"
@@ -101,6 +100,7 @@ namespace ir { class driver; }
 %nterm <ir::Decl> decl
 %nterm <ir::DeclList> decl_list
 %nterm <ir::Type> type
+%nterm <ir::TypeList> type_list
 
 // only for test
 
@@ -131,7 +131,7 @@ decl
     ;
 
 decl_list
-    : { $$ = ir::make_empty_decl_list(); }
+    : %empty { $$ = ir::make_empty_decl_list(); }
     | decl_list decl {
         $1.push_back($2);
         $$ = std::move($1);
@@ -139,7 +139,7 @@ decl_list
     ;
 
 code_list
-    : { $$ = ir::make_empty_code_list(); }
+    : %empty { $$ = ir::make_empty_code_list(); }
     | code_list code {
         $1.push_back($2);
         $$ = std::move($1);
@@ -178,7 +178,7 @@ code
     ;
 
 parameter_list
-    : { 
+    : %empty { 
         // 创建一个parameterlist
         $$ = ir::make_empty_symbol_list();
     }
@@ -217,8 +217,27 @@ type
         $$ = ir::make_pointer_type($2);
         // std::cout << "rule pointer type\n";
     }
+    | "fn" "(" type_list ")" {
+        $$ = ir::make_fn_type($3);
+    }
+    | "fn" "(" type_list ")" "->" type {
+        $$ = ir::make_fn_type($3, $6);
+    }
     /* | struct_type {}
     | '*' type {} */
+    ;
+
+type_list
+    : %empty { $$ = ir::make_empty_type_list(); }
+    | type {
+        auto type_list = ir::make_empty_type_list();
+        type_list.push_back($1);
+        $$ = type_list;
+    }
+    | type_list "," type {
+        $1.push_back($3);
+        $$ = $1;
+    }
     ;
 
 /* struct_type

@@ -47,7 +47,6 @@ blank [ \t\r]
 "decl"      { return yy::parser::make_DECL(loc); }
 "fn"        { return yy::parser::make_FN(loc); }
 "struct"    { return yy::parser::make_STRUCT(loc); }
-"type"      { return yy::parser::make_TYPE(loc); }
 "goto"      { return yy::parser::make_GOTO(loc); }
 "call"      { return yy::parser::make_CALL(loc); }
 

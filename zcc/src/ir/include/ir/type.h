@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -52,11 +53,12 @@ StructTypePtr make_struct_type(TypeList fields);
 
 struct FnType {
     TypeList parameter_type;
-    Type return_type;
+    std::optional<Type> return_type;
 
     std::string to_string() const;
 };
-FnTypePtr make_fn_type(TypeList parameter_type, Type return_type);
+FnTypePtr make_fn_type(TypeList parameter_type,
+                       std::optional<Type> return_type = std::nullopt);
 
 struct PointerType {
     Type type;

@@ -5,7 +5,9 @@
 #include "ir/type.h"
 #include "ir/ir.h"
 #include <memory>
+#include <sstream>
 #include <string>
+#include <variant>
 
 namespace ir {
 
@@ -20,7 +22,8 @@ StructTypePtr make_struct_type(TypeList fields) {
         StructType{.fields = std::move(fields)});
 }
 
-FnTypePtr make_fn_type(TypeList parameter_type, Type return_type) {
+FnTypePtr make_fn_type(TypeList parameter_type,
+                       std::optional<Type> return_type) {
     return std::make_shared<FnType>(FnType{
         .parameter_type = std::move(parameter_type),
         .return_type = std::move(return_type),
@@ -56,7 +59,21 @@ std::string BasicType::to_string() const {
 
 std::string StructType::to_string() const { return "todo"; }
 
-std::string FnType::to_string() const { return "todo"; }
+std::string FnType::to_string() const {
+    std::stringstream ss;
+    ss << "fn(";
+    for (size_t i = 0; i < parameter_type.size(); ++i) {
+        ss << type_to_string(parameter_type[i]);
+        if (i < parameter_type.size() - 1) {
+            ss << ", ";
+        }
+    }
+    ss << ")";
+    if (return_type) {
+        ss << "->" << type_to_string(*return_type);
+    }
+    return ss.str();
+}
 
 std::string PointerType::to_string() const {
     std::stringstream ss;
