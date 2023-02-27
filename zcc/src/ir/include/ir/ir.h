@@ -163,7 +163,16 @@ FnCallPtr make_fncall(std::string name, SymbolList parameter_list);
 FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
                                  std::string result, Type return_type);
 
-using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr>;
+struct Return {
+    std::optional<TypedSymbol> return_value;
+
+    std::string to_string() const;
+};
+using ReturnPtr = std::shared_ptr<Return>;
+ReturnPtr make_return(std::optional<TypedSymbol> return_value = std::nullopt);
+
+using Code =
+    std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr, ReturnPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 

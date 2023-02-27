@@ -31,7 +31,9 @@ blank [ \t\r]
     loc.step();    
 %}
 {blank}+    { loc.step(); }
+ /* 我们需要在code之间引入EOL */
 \n+         { loc.lines(yyleng); loc.step(); }
+
  /* annotation */
 #.*\n       { loc.lines(); loc.step(); 
     // 我懂了 因为我们不会return 所以必须主动loc.step()
@@ -49,6 +51,8 @@ blank [ \t\r]
 "struct"    { return yy::parser::make_STRUCT(loc); }
 "goto"      { return yy::parser::make_GOTO(loc); }
 "call"      { return yy::parser::make_CALL(loc); }
+"ret"       { return yy::parser::make_RET(loc); }
+"none"       { return yy::parser::make_NONE(loc); }
 
  /* basic type C++的枚举没法自动转换成 */
 "bool"  { return yy::parser::make_BASIC_TYPE(IR::BOOL, loc); }

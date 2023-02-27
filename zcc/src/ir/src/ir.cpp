@@ -244,4 +244,21 @@ std::string FnDecl::to_string() const {
 
 DeclList make_empty_decl_list() { return {}; }
 
+ReturnPtr make_return(std::optional<TypedSymbol> return_value) {
+    return std::make_shared<Return>(Return{
+        .return_value = return_value,
+    });
+}
+
+std::string Return::to_string() const {
+    std::stringstream ss;
+    if (return_value) {
+        ss << "ret " << return_value->symbol << ":"
+           << type_to_string(return_value->type);
+    } else {
+        ss << "ret none";
+    }
+    return ss.str();
+}
+
 } // namespace ir

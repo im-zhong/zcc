@@ -59,6 +59,8 @@ namespace ir { class driver; }
     GOTO "goto"
     CALL "call"
     ASTERISK "*"
+    RET "ret"
+    NONE "none"
     /* add "+"
     sub "-"
     mul "*"
@@ -174,6 +176,12 @@ code
     }
     | symbol "=" "call" symbol "(" parameter_list ")" "->" type {
         $$ = ir::make_fncall_assignment($4, $6, $1, $9);
+    }
+    | "ret" "none" {
+        $$ = ir::make_return();
+    } 
+    | "ret" symbol ":" type {
+        $$ = ir::make_return(ir::TypedSymbol{.symbol = $2, .type = $4});
     }
     ;
 

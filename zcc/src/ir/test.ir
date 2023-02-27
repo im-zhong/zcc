@@ -22,8 +22,9 @@ fn @main(%1:i32, %2:i32) -> i32 {
     goto %label1
     %1 = call @somefun(%1:i32, %2:i8) -> i32
     call @somefun(%1:i32, %2:i8)
+    ret %1:i32
 }
-
 fn @consume(%fun:fn(i32, *bool)->f32) -> i32 {
     %1 = call %fun(%1:i32, %2:*bool) -> i32
+    ret none
 }

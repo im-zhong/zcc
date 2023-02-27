@@ -37,6 +37,13 @@ void test_type() {
     auto fn = ir::make_fn_type(type_list, ir::make_basic_type(IR::I32));
     EXPECT_EQ(ir::to_string(*fn), "fn(bool, *i32)->i32"s);
     EXPECT_EQ(ir::type_to_string(fn), "fn(bool, *i32)->i32"s);
+
+    // test return
+    auto ret = ir::make_return();
+    EXPECT_EQ(ir::to_string(*ret), "ret none");
+    auto ret2 = ir::make_return(
+        ir::TypedSymbol{.symbol = "%1", .type = ir::make_basic_type(IR::I32)});
+    EXPECT_EQ(ir::to_string(*ret2), "ret %1:i32");
 }
 
 void test() { test_type(); }
