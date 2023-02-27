@@ -179,6 +179,9 @@ code
     | "ret" symbol ":" type {
         $$ = ir::make_return(ir::TypedSymbol{.symbol = $2, .type = $4});
     }
+    | symbol "=" "local" type {
+        $$ = ir::make_local_decl($1, $4);
+    }
     ;
 
 parameter_list

@@ -294,4 +294,15 @@ std::string GlobalDecl::to_string() const {
     return "global " + name + " = " + value + ":" + type_to_string(type);
 }
 
+LocalDeclPtr make_local_decl(std::string name, Type type) {
+    return std::make_shared<LocalDecl>(LocalDecl{
+        .name = name,
+        .type = type,
+    });
+}
+
+std::string LocalDecl::to_string() const {
+    return name + " = local " + type_to_string(type);
+}
+
 } // namespace ir

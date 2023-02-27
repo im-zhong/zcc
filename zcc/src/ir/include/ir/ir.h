@@ -171,8 +171,17 @@ struct Return {
 using ReturnPtr = std::shared_ptr<Return>;
 ReturnPtr make_return(std::optional<TypedSymbol> return_value = std::nullopt);
 
-using Code =
-    std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr, ReturnPtr>;
+struct LocalDecl {
+    std::string name;
+    Type type;
+
+    std::string to_string() const;
+};
+using LocalDeclPtr = std::shared_ptr<LocalDecl>;
+LocalDeclPtr make_local_decl(std::string name, Type type);
+
+using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr,
+                          ReturnPtr, LocalDeclPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 
