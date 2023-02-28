@@ -60,6 +60,9 @@ struct IR {
 
         // operator
         ASSIGN,
+        ADDROF,
+        LOAD,
+        STORE,
         ADD,
         SUB,
         MUL,
@@ -98,187 +101,138 @@ struct IR {
 std::string type_to_string(Type type);
 std::string op_to_string(int op);
 
-// struct Code {
-//     virtual std::string to_string() const = 0;
-// };
-// using CodePtr = std::shared_ptr<Code>;
+struct Symbol {
+    std::string name;
+    Type type;
+    std::string to_string() const;
+};
+using SymbolList = std::vector<Symbol>;
+auto make_empty_symbol_list() -> SymbolList;
 
 // 不行 对于一些常用的指针类型 可以使用using std::shared_ptr<Symbol>
 // three address code
 // 来自龙书 indirect triple
 struct Instruction {
     int op;
-    std::string left;
-    Type left_type;
-    std::string right;
-    Type right_type;
-    std::string result;
-
+    Symbol left;
+    std::optional<Symbol> right;
+    Symbol result;
     std::string to_string() const;
 };
 using InstructionPtr = std::shared_ptr<Instruction>;
-InstructionPtr make_binary_assignment(int op, std::string left, Type lty,
-                                      std::string right, Type rty,
-                                      std::string result);
-
-InstructionPtr make_assignment(std::string left, Type left_type,
-                               std::string result);
+auto make_instruction(Instruction instruction) -> InstructionPtr;
 
 // 是在源代码中的位置
 struct Label {
-    std::string label;
+    std::string name;
     std::string to_string() const;
 };
 using LabelPtr = std::shared_ptr<Label>;
-LabelPtr make_label(std::string label);
-
-struct TypedSymbol {
-    std::string symbol;
-    Type type;
-};
-
-using SymbolList = std::vector<TypedSymbol>;
-auto make_empty_symbol_list() -> SymbolList;
+LabelPtr make_label(Label label);
 
 struct Branch {
-    std::optional<TypedSymbol> condition;
+    std::optional<Symbol> condition;
     std::string true_label;
     std::optional<std::string> false_label;
-
     std::string to_string() const;
 };
 using BranchPtr = std::shared_ptr<Branch>;
-BranchPtr make_full_branch(std::string symbol, Type type,
-                           std::string true_label, std::string false_label);
-BranchPtr make_half_branch(std::string symbol, Type type,
-                           std::string true_label);
-BranchPtr make_goto(std::string label);
+BranchPtr make_branch(Branch branch);
 
 struct FnCall {
     // 调用的函数名字
     std::string name;
     // 返回符号 但是可选
-    std::optional<std::string> result;
-    // 返回类型 可选
-    std::optional<Type> return_type;
+    // std::optional<std::string> result;
+    // // 返回类型 可选
+    // std::optional<Type> return_type;
     // 参数列表在函数声明和函数定义中是一样的 可以定义一个typedef
     // 因为后面会修改type的实现那
     SymbolList parameter_list;
-
+    std::optional<Type> return_type;
+    std::optional<Symbol> result;
     std::string to_string() const;
 };
 using FnCallPtr = std::shared_ptr<FnCall>;
-FnCallPtr make_fncall(std::string name, SymbolList parameter_list);
-FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
-                                 std::string result, Type return_type);
+FnCallPtr make_fncall(FnCall fncall);
 
 struct Return {
-    std::optional<TypedSymbol> return_value;
-
+    std::optional<Symbol> return_value;
     std::string to_string() const;
 };
 using ReturnPtr = std::shared_ptr<Return>;
-ReturnPtr make_return(std::optional<TypedSymbol> return_value = std::nullopt);
+ReturnPtr make_return(Return ret);
 
-struct LocalDecl {
-    std::string name;
+struct SymbolDef {
+    bool local;
     Type type;
-
+    Symbol result;
+    std::optional<Symbol> size;
     std::string to_string() const;
 };
-using LocalDeclPtr = std::shared_ptr<LocalDecl>;
-LocalDeclPtr make_local_decl(std::string name, Type type);
-
-struct AddrOf {
-    std::string result;
-    std::string value;
-    Type type;
-
-    std::string to_string() const;
-};
-using AddrOfPtr = std::shared_ptr<AddrOf>;
-AddrOfPtr make_addrof(std::string result, std::string value, Type type);
-
-struct Load {
-    std::string result;
-    std::string value;
-    Type type;
-
-    std::string to_string() const;
-};
-using LoadPtr = std::shared_ptr<Load>;
-LoadPtr make_load(std::string result, std::string value, Type type);
-
-struct Store {
-    std::string value;
-    Type value_type;
-    std::string result;
-    Type result_type;
-
-    std::string to_string() const;
-};
-using StorePtr = std::shared_ptr<Store>;
-StorePtr make_store(std::string value, Type value_type, std::string result,
-                    Type result_type);
+using SymbolDefPtr = std::shared_ptr<SymbolDef>;
+SymbolDefPtr make_symbol_def(SymbolDef symbol_def);
 
 struct Cast {
     int cast;
-    std::string value;
-    Type value_type;
-    std::string result;
-    Type result_type;
-
+    Symbol value;
+    Type type;
+    Symbol result;
     std::string to_string() const;
 };
 using CastPtr = std::shared_ptr<Cast>;
-CastPtr make_cast(int cast, std::string value, Type value_type,
-                  std::string result, Type result_type);
+CastPtr make_cast(Cast cast);
 
-using Code =
-    std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr, ReturnPtr,
-                 LocalDeclPtr, AddrOfPtr, LoadPtr, StorePtr, CastPtr>;
+struct Gep {
+    Symbol value;
+    Symbol array_index;
+    Symbol struct_index;
+    Symbol result;
+    std::string to_string() const;
+};
+using GepPtr = std::shared_ptr<Gep>;
+GepPtr make_gep(Gep gep);
+
+using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr,
+                          ReturnPtr, SymbolDefPtr, CastPtr, GepPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 
-struct FnDecl {
+// 这个实际上是定义 而不是声明
+struct FnDef {
     // 函数名字
     std::string name;
     // 函数返回类型
     // 参数列表
     SymbolList parameter_list;
-    std::optional<Type> return_type;
-    // 函数体
     CodeList body;
-
+    std::optional<Type> return_type;
+    // 函数
     std::string to_string() const;
 };
-using FnDeclPtr = std::shared_ptr<FnDecl>;
-FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
-                      Type return_type, CodeList body);
-FnDeclPtr make_noret_fndecl(std::string name, SymbolList parameter_list,
-                            CodeList body);
+using FnDefPtr = std::shared_ptr<FnDef>;
+FnDefPtr make_fndef(FnDef fndef);
+
+// todo
+struct SymbolDecl {
+    Symbol symbol;
+    std::string to_string() const;
+};
+using SymbolDeclPtr = std::shared_ptr<SymbolDecl>;
+SymbolDeclPtr make_symbol_decl(SymbolDecl symbol_decl);
+
+// 用来统一global 和 local
 
 struct StructDecl {
     // type list
     std::string name;
     TypeList fields;
-
     std::string to_string() const;
 };
 using StructDeclPtr = std::shared_ptr<StructDecl>;
-StructDeclPtr make_struct_decl(std::string name, TypeList fields);
+StructDeclPtr make_struct_decl(StructDecl struct_decl);
 
-struct GlobalDecl {
-    std::string name;
-    std::string value;
-    Type type;
-
-    std::string to_string() const;
-};
-using GlobalDeclPtr = std::shared_ptr<GlobalDecl>;
-GlobalDeclPtr make_global_decl(std::string name, std::string value, Type type);
-
-using Decl = std::variant<FnDeclPtr, StructDeclPtr, GlobalDeclPtr>;
+using Decl = std::variant<FnDefPtr, StructDeclPtr, SymbolDefPtr, SymbolDeclPtr>;
 using DeclList = std::vector<Decl>;
 DeclList make_empty_decl_list();
 

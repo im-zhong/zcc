@@ -6,6 +6,7 @@
 #include "ir/type.h"
 #include <cassert>
 #include <cstdlib>
+#include <fmt/core.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -13,80 +14,39 @@
 
 namespace ir {
 
+auto make_instruction(Instruction instruction) -> InstructionPtr {
+    return std::make_shared<Instruction>(instruction);
+}
+auto make_label(Label label) -> LabelPtr {
+    return std::make_shared<Label>(label);
+}
+auto make_branch(Branch branch) -> BranchPtr {
+    return std::make_shared<Branch>(branch);
+}
+auto make_fncall(FnCall fncall) -> FnCallPtr {
+    return std::make_shared<FnCall>(fncall);
+}
+auto make_return(Return ret) -> ReturnPtr {
+    return std::make_shared<Return>(ret);
+}
+auto make_symbol_def(SymbolDef symbol_def) -> SymbolDefPtr {
+    return std::make_shared<SymbolDef>(symbol_def);
+}
+auto make_fndef(FnDef fndef) -> FnDefPtr {
+    return std::make_shared<FnDef>(fndef);
+}
+auto make_struct_decl(StructDecl struct_decl) -> StructDeclPtr {
+    return std::make_shared<StructDecl>(struct_decl);
+}
+auto make_cast(Cast cast) -> CastPtr { return std::make_shared<Cast>(cast); }
+auto make_symbol_decl(SymbolDecl symbol_decl) -> SymbolDeclPtr {
+    return std::make_shared<SymbolDecl>(symbol_decl);
+}
+auto make_gep(Gep gep) -> GepPtr { return std::make_shared<Gep>(gep); }
+
 auto make_empty_symbol_list() -> SymbolList { return {}; }
-// todo
-InstructionPtr make_binary_assignment(int op, std::string left, Type left_type,
-                                      std::string right, Type right_type,
-                                      std::string result) {
-    return std::make_shared<Instruction>(Instruction{.op = op,
-                                                     .left = left,
-                                                     .left_type = left_type,
-                                                     .right = right,
-                                                     .right_type = right_type,
-                                                     .result = result});
-}
-
-InstructionPtr make_assignment(std::string left, Type left_type,
-                               std::string result) {
-    return std::make_shared<Instruction>(Instruction{.op = IR::ASSIGN,
-                                                     .left = left,
-                                                     .left_type = left_type,
-                                                     .result = result});
-}
-
-CodeList make_empty_code_list() { return {}; }
-
-LabelPtr make_label(std::string label) {
-    return std::make_shared<Label>(Label{.label = label});
-}
-
-BranchPtr make_full_branch(std::string symbol, Type type,
-                           std::string true_label, std::string false_label) {
-    return std::make_shared<Branch>(Branch{
-        .condition =
-            TypedSymbol{
-                .symbol = symbol,
-                .type = type,
-            },
-        .true_label = true_label,
-        .false_label = false_label,
-    });
-}
-
-BranchPtr make_half_branch(std::string symbol, Type type,
-                           std::string true_label) {
-    return std::make_shared<Branch>(Branch{
-        .condition =
-            TypedSymbol{
-                .symbol = symbol,
-                .type = type,
-            },
-        .true_label = true_label,
-    });
-}
-
-BranchPtr make_goto(std::string label) {
-    return std::make_shared<Branch>(Branch{
-        .true_label = label,
-    });
-}
-
-FnCallPtr make_fncall(std::string name, SymbolList parameter_list) {
-    return std::make_shared<FnCall>(FnCall{
-        .name = name,
-        .parameter_list = parameter_list,
-    });
-}
-
-FnCallPtr make_fncall_assignment(std::string name, SymbolList parameter_list,
-                                 std::string result, Type return_type) {
-    return std::make_shared<FnCall>(FnCall{
-        .name = name,
-        .result = result,
-        .return_type = return_type,
-        .parameter_list = parameter_list,
-    });
-}
+auto make_empty_code_list() -> CodeList { return {}; }
+auto make_empty_decl_list() -> DeclList { return {}; }
 
 std::string type_to_string(Type type) {
     std::stringstream ss;
@@ -133,30 +93,68 @@ std::string op_to_string(int op) {
     }
 }
 
-std::string Instruction::to_string() const {
-    // 现在我们需要检查它是不是assigment
+std::string Label::to_string() const {
     std::stringstream ss;
-    if (op == IR::ASSIGN) {
-        ss << result << " = " << left << ":" << type_to_string(left_type);
-    } else {
-        ss << result << " = " << left << ":" << type_to_string(left_type) << " "
-           << op_to_string(op) << " " << right << ":"
-           << type_to_string(right_type);
-    }
+    ss << name << ":";
     return ss.str();
 }
 
-std::string Label::to_string() const {
-    std::stringstream ss;
-    ss << label << ":";
-    return ss.str();
+std::string Instruction::to_string() const {
+    // 现在我们需要检查它是不是assigment
+    // std::stringstream ss;
+    // if (op == IR::ASSIGN) {
+    //     // ss << result << " = " << left << ":" << type_to_string(left_type);
+    //     return fmt::format("{} = {}", ir::to_string(result),
+    //                        ir::to_string(left));
+    // } else if (op == IR::ADDROF) {
+    //     return fmt::format("{} = addrof {}", ir::to_string(result),
+    //                        ir::to_string(left));
+    // } else if (op == IR::LOAD) {
+    //     return fmt::format("{} = load {}", ir::to_string(result),
+    //                        ir::to_string(left));
+    // } else if (op == IR::STORE) {
+    //     return fmt::format("store {} to {}", ir::to_string(left),
+    //                        ir::to_string(result));
+    // } else {
+    //     // ss << result << " = " << left << ":" << type_to_string(left_type)
+    //     <<
+    //     // " "
+    //     //    << op_to_string(op) << " " << right << ":"
+    //     //    << type_to_string(right_type);
+    //     return fmt::format("{} = {} {} {}", ir::to_string(result),
+    //                        ir::to_string(left), op_to_string(op),
+    //                        ir::to_string(*right));
+    // }
+    // return ss.str();
+
+    if (right) {
+        return fmt::format("{} = {} {} {}", ir::to_string(result),
+                           ir::to_string(left), op_to_string(op),
+                           ir::to_string(*right));
+    } else {
+        if (op == IR::ASSIGN) {
+            // ss << result << " = " << left << ":" <<
+            // type_to_string(left_type);
+            return fmt::format("{} = {}", ir::to_string(result),
+                               ir::to_string(left));
+        } else if (op == IR::ADDROF) {
+            return fmt::format("{} = addrof {}", ir::to_string(result),
+                               ir::to_string(left));
+        } else if (op == IR::LOAD) {
+            return fmt::format("{} = load {}", ir::to_string(result),
+                               ir::to_string(left));
+        } else if (op == IR::STORE) {
+            return fmt::format("store {} to {}", ir::to_string(left),
+                               ir::to_string(result));
+        }
+    }
+    return "error";
 }
 
 std::string Branch::to_string() const {
     std::stringstream ss;
     if (condition) {
-        ss << "if " << condition->symbol << ":"
-           << type_to_string(condition->type) << " then " << true_label;
+        ss << "if " << ir::to_string(*condition) << " then " << true_label;
         if (false_label) {
             ss << " else " << *false_label;
         }
@@ -170,12 +168,12 @@ std::string Branch::to_string() const {
 std::string FnCall::to_string() const {
     std::stringstream ss;
     if (result) {
-        ss << *result << " = ";
+        ss << ir::to_string(*result) << " = ";
     }
     ss << "call " << name << "(";
     // 这中间是参数列表
     for (size_t i = 0; i < parameter_list.size(); i++) {
-        ss << parameter_list[i].symbol << ":"
+        ss << parameter_list[i].name << ":"
            << type_to_string(parameter_list[i].type);
         if (i < parameter_list.size() - 1) {
             ss << ", ";
@@ -188,21 +186,10 @@ std::string FnCall::to_string() const {
     return ss.str();
 }
 
-FnDeclPtr make_fndecl(std::string name, SymbolList parameter_list,
-                      Type return_type, CodeList body) {
-    return std::make_shared<FnDecl>(FnDecl{
-        .name = name,
-        .parameter_list = parameter_list,
-        .return_type = return_type,
-        .body = body,
-    });
-}
-
 std::string symbol_list_to_string(const SymbolList& symbol_list) {
     std::stringstream ss;
     for (size_t i = 0; i < symbol_list.size(); i++) {
-        ss << symbol_list[i].symbol << ":"
-           << type_to_string(symbol_list[i].type);
+        ss << symbol_list[i].name << ":" << type_to_string(symbol_list[i].type);
         if (i < symbol_list.size() - 1) {
             ss << ", ";
         }
@@ -210,16 +197,7 @@ std::string symbol_list_to_string(const SymbolList& symbol_list) {
     return ss.str();
 }
 
-FnDeclPtr make_noret_fndecl(std::string name, SymbolList parameter_list,
-                            CodeList body) {
-    return std::make_shared<FnDecl>(FnDecl{
-        .name = name,
-        .parameter_list = parameter_list,
-        .body = body,
-    });
-}
-
-std::string FnDecl::to_string() const {
+std::string FnDef::to_string() const {
     std::stringstream ss;
     ss << "fn " << name << "(" << symbol_list_to_string(parameter_list) << ")";
     // 检查是否拥有返回值
@@ -244,30 +222,15 @@ std::string FnDecl::to_string() const {
     return ss.str();
 }
 
-DeclList make_empty_decl_list() { return {}; }
-
-ReturnPtr make_return(std::optional<TypedSymbol> return_value) {
-    return std::make_shared<Return>(Return{
-        .return_value = return_value,
-    });
-}
-
 std::string Return::to_string() const {
     std::stringstream ss;
     if (return_value) {
-        ss << "ret " << return_value->symbol << ":"
+        ss << "ret " << return_value->name << ":"
            << type_to_string(return_value->type);
     } else {
         ss << "ret none";
     }
     return ss.str();
-}
-
-StructDeclPtr make_struct_decl(std::string name, TypeList fields) {
-    return std::make_shared<StructDecl>(StructDecl{
-        .name = name,
-        .fields = fields,
-    });
 }
 
 std::string StructDecl::to_string() const {
@@ -283,77 +246,15 @@ std::string StructDecl::to_string() const {
     return ss.str();
 }
 
-GlobalDeclPtr make_global_decl(std::string name, std::string value, Type type) {
-    return std::make_shared<GlobalDecl>(GlobalDecl{
-        .name = name,
-        .value = value,
-        .type = type,
-    });
-}
-
-std::string GlobalDecl::to_string() const {
-    return "global " + name + " = " + value + ":" + type_to_string(type);
-}
-
-LocalDeclPtr make_local_decl(std::string name, Type type) {
-    return std::make_shared<LocalDecl>(LocalDecl{
-        .name = name,
-        .type = type,
-    });
-}
-
-std::string LocalDecl::to_string() const {
-    return name + " = local " + type_to_string(type);
-}
-
-AddrOfPtr make_addrof(std::string result, std::string value, Type type) {
-    return std::make_shared<AddrOf>(AddrOf{
-        .result = result,
-        .value = value,
-        .type = type,
-    });
-}
-
-std::string AddrOf::to_string() const {
-    return result + " = addrof " + value + ":" + type_to_string(type);
-}
-
-LoadPtr make_load(std::string result, std::string value, Type type) {
-    return std::make_shared<Load>(Load{
-        .result = result,
-        .value = value,
-        .type = type,
-    });
-}
-
-std::string Load::to_string() const {
-    return result + " = load " + value + ":" + type_to_string(type);
-}
-
-StorePtr make_store(std::string value, Type value_type, std::string result,
-                    Type result_type) {
-    return std::make_shared<Store>(Store{
-        .value = value,
-        .value_type = value_type,
-        .result = result,
-        .result_type = result_type,
-    });
-}
-
-std::string Store::to_string() const {
-    return "store " + value + ":" + type_to_string(value_type) + " to " +
-           result + ":" + type_to_string(result_type);
-}
-
-CastPtr make_cast(int cast, std::string value, Type value_type,
-                  std::string result, Type result_type) {
-    return std::make_shared<Cast>(Cast{
-        .cast = cast,
-        .value = value,
-        .value_type = value_type,
-        .result = result,
-        .result_type = result_type,
-    });
+std::string SymbolDef::to_string() const {
+    // return name + " = local " + type_to_string(type);
+    std::string position = local ? "local" : "global";
+    if (size) {
+        return fmt::format("{} = {} {}, {}", ir::to_string(result), position,
+                           type_to_string(type), ir::to_string(*size));
+    }
+    return fmt::format("{} = {} {}", ir::to_string(result), position,
+                       type_to_string(type));
 }
 
 std::string cast_to_string(int cast) {
@@ -376,8 +277,26 @@ std::string cast_to_string(int cast) {
 }
 
 std::string Cast::to_string() const {
-    return result + " = " + cast_to_string(cast) + " " + value + ":" +
-           type_to_string(value_type) + " to " + type_to_string(result_type);
+    // return result + " = " + cast_to_string(cast) + " " + value + ":" +
+    //        type_to_string(value_type) + " to " +
+    //        type_to_string(result_type);
+    return fmt::format("{} = {} {} to {}", ir::to_string(result),
+                       cast_to_string(cast), ir::to_string(value),
+                       type_to_string(type));
+}
+
+std::string Symbol::to_string() const {
+    return fmt::format("{}:{}", name, type_to_string(type));
+}
+
+std::string SymbolDecl::to_string() const {
+    return fmt::format("decl {}", ir::to_string(symbol));
+}
+
+std::string Gep::to_string() const {
+    return fmt::format("{} = gep {}, {}, {}", ir::to_string(result),
+                       ir::to_string(value), ir::to_string(array_index),
+                       ir::to_string(struct_index));
 }
 
 } // namespace ir

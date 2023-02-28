@@ -56,6 +56,8 @@ blank [ \t\r]
 "load"      { return yy::parser::make_LOAD(loc); }
 "store"     { return yy::parser::make_STORE(loc); }
 "to"        { return yy::parser::make_TO(loc); }
+"gep"       { return yy::parser::make_GEP(loc); }
+"decl"      { return yy::parser::make_DECL(loc); }
 
  /* basic type C++的枚举没法自动转换成 */
 "bool"  { return yy::parser::make_BASIC_TYPE(IR::BOOL, loc); }

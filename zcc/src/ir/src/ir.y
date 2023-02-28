@@ -64,6 +64,8 @@ namespace ir { class driver; }
     LOAD "load"
     STORE "store"
     TO "to"
+    GEP "gep"
+    DECL "decl"
     /* add "+"
     sub "-"
     mul "*"
@@ -95,18 +97,19 @@ namespace ir { class driver; }
     LOCAL_SYMBOL    "local_symbol"
     CONSTANT        "constant"
 
-%nterm <std::string> symbol
-
 %token <std::string>
     IDENTIFIER "identifier"
 
 %nterm <ir::Code> code
 %nterm <ir::CodeList> code_list
+%nterm <ir::Symbol> symbol
 %nterm <ir::SymbolList> parameter_list
 %nterm <ir::Decl> decl
 %nterm <ir::DeclList> decl_list
 %nterm <ir::Type> type
 %nterm <ir::TypeList> type_list
+%nterm <std::string> name
+
 
 %%
 // o 最终生成的东西可以放在driver里面呀 完美 drv
@@ -117,26 +120,55 @@ translation_unit
     }
     ;
 
-decl
-    : "fn" symbol "(" parameter_list ")" "->" type "{" code_list "}" {
-        $$ = ir::make_fndecl($2, $4, $7, $9);
-    }
-    | "fn" symbol "(" parameter_list ")" "{" code_list "}" {
-        $$ = ir::make_noret_fndecl($2, $4, $7);
-    }
-    | "struct" "identifier" "{" type_list "}" {
-        $$ = ir::make_struct_decl($2, $4);
-    }
-    | "global" symbol "=" symbol ":" type {
-        $$ = ir::make_global_decl($2, $4, $6);
-    }
-    ;
-
 decl_list
     : %empty { $$ = ir::make_empty_decl_list(); }
     | decl_list decl {
         $1.push_back($2);
         $$ = std::move($1);
+    }
+    ;
+
+decl
+    : "fn" name "(" parameter_list ")" "->" type "{" code_list "}" {
+        $$ = ir::make_fndef({
+            .name = $2,
+            .parameter_list = $4,
+            .body = $9,
+            .return_type = $7,
+        });
+    }
+    | "fn" name "(" parameter_list ")" "{" code_list "}" {
+        $$ = ir::make_fndef({
+            .name = $2, 
+            .parameter_list = $4,
+            .body = $7
+        });
+    }
+    | "struct" "identifier" "{" type_list "}" {
+        $$ = ir::make_struct_decl({
+            .name = $2, 
+            .fields = $4
+        });
+    }
+    | symbol "=" "global" type {
+        $$ = ir::make_symbol_def({
+            .local = false,
+            .type = $4,
+            .result = $1,
+        });
+    }
+    | symbol "=" "global" type "," symbol {
+        $$ = ir::make_symbol_def({
+            .local = false,
+            .type = $4,
+            .result = $1,
+            .size = $6,
+        });
+    }
+    | "decl" symbol {
+        $$ = ir::make_symbol_decl({
+            .symbol = $2,
+        });
     }
     ;
 
@@ -149,54 +181,114 @@ code_list
     ;
 
 code
-    : symbol "=" symbol ":" type "op" symbol ":" type {
+    : symbol "=" symbol "op" symbol {
         // 组织成一个instruction
-        $$ = ir::make_binary_assignment($6, $3, $5, $7, $9, $1);
+        $$ = ir::make_instruction({
+            .op = $4,
+            .left = $3,
+            .right = $5,
+            .result = $1,
+        });
     }
-    | symbol "=" symbol ":" type "*" symbol ":" type {
-        $$ = ir::make_binary_assignment(ir::IR::MUL, $3, $5, $7, $9, $1);
+    | symbol "=" symbol "*" symbol {
+        $$ = ir::make_instruction({
+            .op = ir::IR::MUL,
+            .left = $3,
+            .right = $5,
+            .result = $1,
+        });
     }
-    | symbol "=" "addrof" symbol ":" type {
-        $$ = ir::make_addrof($1, $4, $6);
+    | symbol "=" "addrof" symbol {
+        $$ = ir::make_instruction({
+            .op = ir::IR::ADDROF,
+            .left = $4,
+            .result = $1,
+        });
+    }
+    | symbol "=" symbol {
+        $$ = ir::make_instruction({
+            .op = ir::IR::ASSIGN,
+            .left = $3,
+            .result = $1
+        });
+    }
+    | symbol "=" "load" symbol {
+        $$ = ir::make_instruction({
+            .op = ir::IR::LOAD,
+            .left = $4,
+            .result = $1
+        });
+    }
+    | "store" symbol "to" symbol {
+        $$ = ir::make_instruction({
+            .op = ir::IR::STORE,
+            .left = $2,
+            .result = $4
+        });
     }
     | "identifier" ":" {
-        $$ = ir::make_label($1);
+        $$ = ir::make_label({.name = $1});
     }
-    | symbol "=" symbol ":" type {
-        $$ = ir::make_assignment($3, $5, $1);
-    }
-    | "if" symbol ":" type "then" symbol "else" symbol {
-        $$ = ir::make_full_branch($2, $4, $6, $8);
+    | "if" symbol "then" name "else" name {
+        $$ = ir::make_branch({
+            .condition = $2,
+            .true_label = $4,
+            .false_label = $6,
+        });
     } 
-    | "if" symbol ":" type "then" symbol {
-        $$ = ir::make_half_branch($2, $4, $6);
+    | "if" symbol "then" name {
+        $$ = ir::make_branch({.condition = $2, .true_label = $4});
     }
-    | "goto" symbol {
-        $$ = ir::make_goto($2);
+    | "goto" name {
+        $$ = ir::make_branch({.true_label = $2});
     }
-    | "call" symbol "(" parameter_list ")" {
-        $$ = ir::make_fncall($2, $4);
+    | "call" name "(" parameter_list ")" {
+        $$ = ir::make_fncall({.name = $2, .parameter_list = $4});
     }
-    | symbol "=" "call" symbol "(" parameter_list ")" "->" type {
-        $$ = ir::make_fncall_assignment($4, $6, $1, $9);
+    | symbol "=" "call" name "(" parameter_list ")" "->" type {
+        $$ = ir::make_fncall({
+            .name = $4,
+            .parameter_list = $6,
+            .return_type = $9,
+            .result = $1,
+        });
     }
     | "ret" "none" {
-        $$ = ir::make_return();
+        $$ = ir::make_return({});
     } 
-    | "ret" symbol ":" type {
-        $$ = ir::make_return(ir::TypedSymbol{.symbol = $2, .type = $4});
+    | "ret" symbol {
+        $$ = ir::make_return({.return_value = $2});
+    }
+    | symbol "=" "cast" symbol "to" type {
+        $$ = ir::make_cast({
+            .cast = $3,
+            .value = $4,
+            .type = $6,
+            .result = $1,
+        });
     }
     | symbol "=" "local" type {
-        $$ = ir::make_local_decl($1, $4);
+        $$ = ir::make_symbol_def({
+            .local = true,
+            .type = $4,
+            .result = $1,
+        });
     }
-    | symbol "=" "load" symbol ":" type {
-        $$ = ir::make_load($1, $4, $6);
+    | symbol "=" "local" type "," symbol {
+        $$ = ir::make_symbol_def({
+            .local = true,
+            .type = $4,
+            .result = $1,
+            .size = $6,
+        });
     }
-    | "store" symbol ":" type "to" symbol ":" type {
-        $$ = ir::make_store($2, $4, $6, $8);
-    }
-    | symbol "=" "cast" symbol ":" type "to" type {
-        $$ = ir::make_cast($3, $4, $6, $1, $8);
+    | symbol "=" "gep" symbol "," symbol "," symbol {
+        $$ = ir::make_gep({
+            .value = $4,
+            .array_index = $6,
+            .struct_index = $8,
+            .result = $1,
+        });
     }
     ;
 
@@ -205,30 +297,29 @@ parameter_list
         // 创建一个parameterlist
         $$ = ir::make_empty_symbol_list();
     }
-    | symbol ":" type {
+    | symbol {
         auto list = ir::make_empty_symbol_list();
-        list.push_back(ir::TypedSymbol{.symbol = $1, .type = $3});
+        list.push_back($1);
         $$ = std::move(list);
     }
-    | parameter_list "," symbol ":" type {
-        $1.push_back(ir::TypedSymbol{.symbol = $3, .type = $5});
+    | parameter_list "," symbol {
+        $1.push_back($3);
         $$ = std::move($1);
     }
     ;
 
-/* type_alias
-    : TYPE TYPE_ID '=' type {}
-    ; */
-
-/* declaration
-    : DECL FN GLOBAL_SYMBOL '(' type_list ')' ARROW type {}
-    | GLOBAL GLOBAL_SYMBOL '=' typed_constant {}
-    | CONST GLOBAL_SYMBOL '=' typed_constant {}
-    ; */
-
-/* definition
-    : FN GLOBAL_SYMBOL '(' parameter_list ')' ARROW type '{' function_body '}' {}
-    ; */
+type_list
+    : %empty { $$ = ir::make_empty_type_list(); }
+    | type {
+        auto type_list = ir::make_empty_type_list();
+        type_list.push_back($1);
+        $$ = type_list;
+    }
+    | type_list "," type {
+        $1.push_back($3);
+        $$ = $1;
+    }
+    ;
 
 type
     : "basic_type" {
@@ -251,20 +342,13 @@ type
     }
     ;
 
-type_list
-    : %empty { $$ = ir::make_empty_type_list(); }
-    | type {
-        auto type_list = ir::make_empty_type_list();
-        type_list.push_back($1);
-        $$ = type_list;
-    }
-    | type_list "," type {
-        $1.push_back($3);
-        $$ = $1;
+symbol
+    : name ":" type {
+        $$ = ir::Symbol{.name = $1, .type = $3};
     }
     ;
 
-symbol
+name
     : "global_symbol" { $$ = $1; }
     | "local_symbol" { $$ = $1; }
     | "constant" { $$ = $1; }
