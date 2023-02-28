@@ -305,4 +305,28 @@ std::string LocalDecl::to_string() const {
     return name + " = local " + type_to_string(type);
 }
 
+AddrOfPtr make_addrof(std::string result, std::string value, Type type) {
+    return std::make_shared<AddrOf>(AddrOf{
+        .result = result,
+        .value = value,
+        .type = type,
+    });
+}
+
+std::string AddrOf::to_string() const {
+    return result + " = addrof " + value + ":" + type_to_string(type);
+}
+
+LoadPtr make_load(std::string result, std::string value, Type type) {
+    return std::make_shared<Load>(Load{
+        .result = result,
+        .value = value,
+        .type = type,
+    });
+}
+
+std::string Load::to_string() const {
+    return result + " = load " + value + ":" + type_to_string(type);
+}
+
 } // namespace ir

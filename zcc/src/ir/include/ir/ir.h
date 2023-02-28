@@ -180,8 +180,28 @@ struct LocalDecl {
 using LocalDeclPtr = std::shared_ptr<LocalDecl>;
 LocalDeclPtr make_local_decl(std::string name, Type type);
 
+struct AddrOf {
+    std::string result;
+    std::string value;
+    Type type;
+
+    std::string to_string() const;
+};
+using AddrOfPtr = std::shared_ptr<AddrOf>;
+AddrOfPtr make_addrof(std::string result, std::string value, Type type);
+
+struct Load {
+    std::string result;
+    std::string value;
+    Type type;
+
+    std::string to_string() const;
+};
+using LoadPtr = std::shared_ptr<Load>;
+LoadPtr make_load(std::string result, std::string value, Type type);
+
 using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr,
-                          ReturnPtr, LocalDeclPtr>;
+                          ReturnPtr, LocalDeclPtr, AddrOfPtr, LoadPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 

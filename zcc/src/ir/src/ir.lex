@@ -46,13 +46,14 @@ blank [ \t\r]
 "if"        { return yy::parser::make_IF(loc); }
 "then"      { return yy::parser::make_THEN(loc); }
 "else"      { return yy::parser::make_ELSE(loc); }
-"decl"      { return yy::parser::make_DECL(loc); }
 "fn"        { return yy::parser::make_FN(loc); }
 "struct"    { return yy::parser::make_STRUCT(loc); }
 "goto"      { return yy::parser::make_GOTO(loc); }
 "call"      { return yy::parser::make_CALL(loc); }
 "ret"       { return yy::parser::make_RET(loc); }
-"none"       { return yy::parser::make_NONE(loc); }
+"none"      { return yy::parser::make_NONE(loc); }
+"addrof"    { return yy::parser::make_ADDROF(loc); }
+"load"      { return yy::parser::make_LOAD(loc);  }
 
  /* basic type C++的枚举没法自动转换成 */
 "bool"  { return yy::parser::make_BASIC_TYPE(IR::BOOL, loc); }

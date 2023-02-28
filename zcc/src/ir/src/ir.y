@@ -53,7 +53,6 @@ namespace ir { class driver; }
     ELSE "else"
     GLOBAL "global"
     LOCAL "local"
-    DECL "decl"
     FN "fn"
     STRUCT "struct"
     GOTO "goto"
@@ -61,6 +60,8 @@ namespace ir { class driver; }
     ASTERISK "*"
     RET "ret"
     NONE "none"
+    ADDROF "addrof"
+    LOAD "load"
     /* add "+"
     sub "-"
     mul "*"
@@ -152,6 +153,9 @@ code
     | symbol "=" symbol ":" type "*" symbol ":" type {
         $$ = ir::make_binary_assignment(ir::IR::MUL, $3, $5, $7, $9, $1);
     }
+    | symbol "=" "addrof" symbol ":" type {
+        $$ = ir::make_addrof($1, $4, $6);
+    }
     | "identifier" ":" {
         $$ = ir::make_label($1);
     }
@@ -181,6 +185,9 @@ code
     }
     | symbol "=" "local" type {
         $$ = ir::make_local_decl($1, $4);
+    }
+    | symbol "=" "load" symbol ":" type {
+        $$ = ir::make_load($1, $4, $6);
     }
     ;
 
