@@ -26,12 +26,13 @@ yy::location& driver::get_location() { return this->location; }
 DeclList& driver::get_decl_list() { return this->decl_list; }
 
 void driver::dump() const {
-    for (const auto& v : this->decl_list) {
+    for (const auto& decl : this->decl_list) {
         // visit就是遍历variant的值
         // 这里的auto推导的类型是 shared_ptr
         // 然后to_string是一个模板函数 会调用类型的to_string
         std::visit(
-            [](auto code) { std::cout << to_string(*code) << std::endl; }, v);
+            [](auto decl) { std::cout << to_string(*decl) << std::endl; },
+            decl);
     }
 }
 

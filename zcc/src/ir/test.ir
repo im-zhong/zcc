@@ -43,6 +43,7 @@ struct test {
     *test,
     *test
 }
+decl @printf:fn(*i8)->i32
 @symbol:i32 = global i32
 fn @gep() {
     %1:i32 = local test, $10:i32
