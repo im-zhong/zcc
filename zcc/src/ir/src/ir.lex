@@ -53,7 +53,9 @@ blank [ \t\r]
 "ret"       { return yy::parser::make_RET(loc); }
 "none"      { return yy::parser::make_NONE(loc); }
 "addrof"    { return yy::parser::make_ADDROF(loc); }
-"load"      { return yy::parser::make_LOAD(loc);  }
+"load"      { return yy::parser::make_LOAD(loc); }
+"store"     { return yy::parser::make_STORE(loc); }
+"to"        { return yy::parser::make_TO(loc); }
 
  /* basic type C++的枚举没法自动转换成 */
 "bool"  { return yy::parser::make_BASIC_TYPE(IR::BOOL, loc); }

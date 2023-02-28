@@ -329,4 +329,19 @@ std::string Load::to_string() const {
     return result + " = load " + value + ":" + type_to_string(type);
 }
 
+StorePtr make_store(std::string value, Type value_type, std::string result,
+                    Type result_type) {
+    return std::make_shared<Store>(Store{
+        .value = value,
+        .value_type = value_type,
+        .result = result,
+        .result_type = result_type,
+    });
+}
+
+std::string Store::to_string() const {
+    return "store " + value + ":" + type_to_string(value_type) + " to " +
+           result + ":" + type_to_string(result_type);
+}
+
 } // namespace ir

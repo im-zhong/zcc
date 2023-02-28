@@ -200,8 +200,21 @@ struct Load {
 using LoadPtr = std::shared_ptr<Load>;
 LoadPtr make_load(std::string result, std::string value, Type type);
 
-using Code = std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr,
-                          ReturnPtr, LocalDeclPtr, AddrOfPtr, LoadPtr>;
+struct Store {
+    std::string value;
+    Type value_type;
+    std::string result;
+    Type result_type;
+
+    std::string to_string() const;
+};
+using StorePtr = std::shared_ptr<Store>;
+StorePtr make_store(std::string value, Type value_type, std::string result,
+                    Type result_type);
+
+using Code =
+    std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr, ReturnPtr,
+                 LocalDeclPtr, AddrOfPtr, LoadPtr, StorePtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 

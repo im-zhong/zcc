@@ -62,6 +62,8 @@ namespace ir { class driver; }
     NONE "none"
     ADDROF "addrof"
     LOAD "load"
+    STORE "store"
+    TO "to"
     /* add "+"
     sub "-"
     mul "*"
@@ -188,6 +190,9 @@ code
     }
     | symbol "=" "load" symbol ":" type {
         $$ = ir::make_load($1, $4, $6);
+    }
+    | "store" symbol ":" type "to" symbol ":" type {
+        $$ = ir::make_store($2, $4, $6, $8);
     }
     ;
 
