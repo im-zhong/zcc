@@ -66,6 +66,7 @@ namespace ir { class driver; }
     TO "to"
     GEP "gep"
     DECL "decl"
+    ELLIPSIS "..."
     /* add "+"
     sub "-"
     mul "*"
@@ -137,29 +138,44 @@ decl
             .return_type = $7,
         });
     }
+    | "fn" name "(" parameter_list "," "..." ")" "->" type "{" code_list "}" {
+        $$ = ir::make_fndef({
+            .name = $2,
+            .parameter_list = $4,
+            .body = $11,
+            .varargs = true,
+            .return_type = $9,
+        });
+    }
     | "fn" name "(" parameter_list ")" "{" code_list "}" {
         $$ = ir::make_fndef({
             .name = $2, 
             .parameter_list = $4,
-            .body = $7
+            .body = $7,
+        });
+    }
+    | "fn" name "(" parameter_list "," "..." ")" "{" code_list "}" {
+        $$ = ir::make_fndef({
+            .name = $2, 
+            .parameter_list = $4,
+            .body = $9,
+            .varargs = true,
         });
     }
     | "struct" "identifier" "{" type_list "}" {
         $$ = ir::make_struct_decl({
             .name = $2, 
-            .fields = $4
+            .fields = $4,
         });
     }
     | symbol "=" "global" type {
         $$ = ir::make_symbol_def({
-            .local = false,
             .type = $4,
             .result = $1,
         });
     }
     | symbol "=" "global" type "," symbol {
         $$ = ir::make_symbol_def({
-            .local = false,
             .type = $4,
             .result = $1,
             .size = $6,
@@ -209,21 +225,21 @@ code
         $$ = ir::make_instruction({
             .op = ir::IR::ASSIGN,
             .left = $3,
-            .result = $1
+            .result = $1,
         });
     }
     | symbol "=" "load" symbol {
         $$ = ir::make_instruction({
             .op = ir::IR::LOAD,
             .left = $4,
-            .result = $1
+            .result = $1,
         });
     }
     | "store" symbol "to" symbol {
         $$ = ir::make_instruction({
             .op = ir::IR::STORE,
             .left = $2,
-            .result = $4
+            .result = $4,
         });
     }
     | "identifier" ":" {
@@ -332,10 +348,23 @@ type
         // std::cout << "rule pointer type\n";
     }
     | "fn" "(" type_list ")" {
-        $$ = ir::make_fn_type($3);
+        $$ = ir::make_fn_type({.parameter_type = $3});
     }
     | "fn" "(" type_list ")" "->" type {
-        $$ = ir::make_fn_type($3, $6);
+        $$ = ir::make_fn_type({.parameter_type = $3, .return_type = $6});
+    }
+    | "fn" "(" type_list "," "..." ")" {
+        $$ = ir::make_fn_type({
+            .parameter_type = $3,
+            .varargs = true,
+        });
+    }
+    | "fn" "(" type_list "," "..." ")" "->" type {
+        $$ = ir::make_fn_type({
+            .parameter_type = $3, 
+            .varargs = true,
+            .return_type = $8,
+        });
     }
     | "identifier" {
         $$ = ir::make_struct_type($1);

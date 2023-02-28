@@ -34,7 +34,8 @@ void test_type() {
     auto type_list = ir::make_empty_type_list();
     type_list.push_back(ir::make_basic_type(IR::BOOL));
     type_list.push_back(pi);
-    auto fn = ir::make_fn_type(type_list, ir::make_basic_type(IR::I32));
+    auto fn = ir::make_fn_type({.parameter_type = type_list,
+                                .return_type = ir::make_basic_type(IR::I32)});
     EXPECT_EQ(ir::to_string(*fn), "fn(bool, *i32)->i32"s);
     EXPECT_EQ(ir::type_to_string(fn), "fn(bool, *i32)->i32"s);
 

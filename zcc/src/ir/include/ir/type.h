@@ -52,12 +52,11 @@ StructTypePtr make_struct_type(std::string name);
 
 struct FnType {
     TypeList parameter_type;
+    bool varargs;
     std::optional<Type> return_type;
-
     std::string to_string() const;
 };
-FnTypePtr make_fn_type(TypeList parameter_type,
-                       std::optional<Type> return_type = std::nullopt);
+FnTypePtr make_fn_type(FnType fn_type);
 
 struct PointerType {
     Type type;

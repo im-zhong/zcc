@@ -206,6 +206,7 @@ struct FnDef {
     // 参数列表
     SymbolList parameter_list;
     CodeList body;
+    bool varargs;
     std::optional<Type> return_type;
     // 函数
     std::string to_string() const;

@@ -199,7 +199,11 @@ std::string symbol_list_to_string(const SymbolList& symbol_list) {
 
 std::string FnDef::to_string() const {
     std::stringstream ss;
-    ss << "fn " << name << "(" << symbol_list_to_string(parameter_list) << ")";
+    ss << "fn " << name << "(" << symbol_list_to_string(parameter_list);
+    if (varargs) {
+        ss << ", ...";
+    }
+    ss << ")";
     // 检查是否拥有返回值
     if (return_type) {
         ss << " -> " << type_to_string(*return_type);

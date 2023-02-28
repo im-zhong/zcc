@@ -84,6 +84,7 @@ blank [ \t\r]
 "("     { return yy::parser::make_LEFT_PARENTHESIS(loc); }
 ")"     { return yy::parser::make_RIGHT_PARENTHESIS(loc); }
 "->"    { return yy::parser::make_ARROW(loc); }
+"..."   { return yy::parser::make_ELLIPSIS(loc); }
 
  /* cast */
  /* "bitcast" {}

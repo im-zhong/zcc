@@ -21,12 +21,8 @@ StructTypePtr make_struct_type(std::string name) {
     return std::make_shared<StructType>(StructType{.name = name});
 }
 
-FnTypePtr make_fn_type(TypeList parameter_type,
-                       std::optional<Type> return_type) {
-    return std::make_shared<FnType>(FnType{
-        .parameter_type = std::move(parameter_type),
-        .return_type = std::move(return_type),
-    });
+FnTypePtr make_fn_type(FnType fn_type) {
+    return std::make_shared<FnType>(fn_type);
 }
 
 PointerTypePtr make_pointer_type(Type type) {
@@ -66,6 +62,9 @@ std::string FnType::to_string() const {
         if (i < parameter_type.size() - 1) {
             ss << ", ";
         }
+    }
+    if (varargs) {
+        ss << ", ...";
     }
     ss << ")";
     if (return_type) {
