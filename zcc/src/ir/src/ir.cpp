@@ -4,6 +4,7 @@
 
 #include "ir/ir.h"
 #include "ir/type.h"
+#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -342,6 +343,41 @@ StorePtr make_store(std::string value, Type value_type, std::string result,
 std::string Store::to_string() const {
     return "store " + value + ":" + type_to_string(value_type) + " to " +
            result + ":" + type_to_string(result_type);
+}
+
+CastPtr make_cast(int cast, std::string value, Type value_type,
+                  std::string result, Type result_type) {
+    return std::make_shared<Cast>(Cast{
+        .cast = cast,
+        .value = value,
+        .value_type = value_type,
+        .result = result,
+        .result_type = result_type,
+    });
+}
+
+std::string cast_to_string(int cast) {
+    switch (cast) {
+    case IR::BITCAST:
+        return "bitcast";
+    case IR::ZEROEXT:
+        return "zeroext";
+    case IR::SIGNEXT:
+        return "signext";
+    case IR::TRUNC:
+        return "trunc";
+    case IR::FEXT:
+        return "fext";
+    case IR::FTRUNC:
+        return "ftrunc";
+    default:
+        assert(false);
+    }
+}
+
+std::string Cast::to_string() const {
+    return result + " = " + cast_to_string(cast) + " " + value + ":" +
+           type_to_string(value_type) + " to " + type_to_string(result_type);
 }
 
 } // namespace ir

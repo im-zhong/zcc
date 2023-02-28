@@ -88,6 +88,7 @@ namespace ir { class driver; }
 %token <int> BASIC_TYPE "basic_type"
 // yy::parser::make_op(int, loc)
 %token <int> OP "op"
+%token <int> CAST "cast"
 // non terminal 就不会生成东西了, 现在type不表示任何东西 所以暂时用int代替
 %token <std::string>
     GLOBAL_SYMBOL   "global_symbol"
@@ -193,6 +194,9 @@ code
     }
     | "store" symbol ":" type "to" symbol ":" type {
         $$ = ir::make_store($2, $4, $6, $8);
+    }
+    | symbol "=" "cast" symbol ":" type "to" type {
+        $$ = ir::make_cast($3, $4, $6, $1, $8);
     }
     ;
 

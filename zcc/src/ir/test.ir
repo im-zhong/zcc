@@ -29,6 +29,12 @@ fn @consume(%fun:fn(i32, *bool)->f32) -> i32 {
     %2 = addrof %1:i32
     %3 = load %2:*i32
     store $1:i32 to %2:*i32
+    %4 = bitcast %2:*i32 to *i8
+    %5 = zeroext %1:i8 to i32
+    %6 = signext %2:i16 to i64
+    %7 = trunc %6:i64 to i32
+    %8 = fext %1:f32 to f64
+    %9 = ftrunc %8:f64 to f32
     %1 = call %fun(%1:i32, %2:*bool) -> i32
     ret none
 }

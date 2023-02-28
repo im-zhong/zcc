@@ -83,6 +83,15 @@ struct IR {
         TEMP_SYMBOL,
         NUM,
         ERROR,
+
+        // cast
+        BITCAST,
+        ZEROEXT,
+        SIGNEXT,
+        TRUNC,
+        FEXT,
+        FTRUNC,
+        // pointer类型支持数学运算
     };
 };
 
@@ -212,9 +221,22 @@ using StorePtr = std::shared_ptr<Store>;
 StorePtr make_store(std::string value, Type value_type, std::string result,
                     Type result_type);
 
+struct Cast {
+    int cast;
+    std::string value;
+    Type value_type;
+    std::string result;
+    Type result_type;
+
+    std::string to_string() const;
+};
+using CastPtr = std::shared_ptr<Cast>;
+CastPtr make_cast(int cast, std::string value, Type value_type,
+                  std::string result, Type result_type);
+
 using Code =
     std::variant<InstructionPtr, LabelPtr, BranchPtr, FnCallPtr, ReturnPtr,
-                 LocalDeclPtr, AddrOfPtr, LoadPtr, StorePtr>;
+                 LocalDeclPtr, AddrOfPtr, LoadPtr, StorePtr, CastPtr>;
 using CodeList = std::vector<Code>;
 CodeList make_empty_code_list();
 

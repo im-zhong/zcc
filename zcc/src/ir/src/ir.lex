@@ -66,6 +66,13 @@ blank [ \t\r]
 "f32"   { return yy::parser::make_BASIC_TYPE(IR::F32, loc); }
 "f64"   { return yy::parser::make_BASIC_TYPE(IR::F64, loc); }
 
+"bitcast"   { return yy::parser::make_CAST(IR::BITCAST, loc); }
+"zeroext"   { return yy::parser::make_CAST(IR::ZEROEXT, loc); }
+"signext"   { return yy::parser::make_CAST(IR::SIGNEXT, loc); }
+"trunc"     { return yy::parser::make_CAST(IR::TRUNC, loc); }
+"fext"      { return yy::parser::make_CAST(IR::FEXT, loc); }
+"ftrunc"    { return yy::parser::make_CAST(IR::FTRUNC, loc); }
+
  /* seperator */
 ":"     { return yy::parser::make_COLON(loc); }
 "{"     { return yy::parser::make_LEFT_BRACE(loc); }
