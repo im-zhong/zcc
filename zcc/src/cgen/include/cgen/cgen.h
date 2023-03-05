@@ -6,7 +6,9 @@
 #include "ir/driver.h"
 #include "ir/ir.h"
 #include <list>
+#include <map>
 #include <ranges>
+#include <unordered_map>
 #include <variant>
 
 namespace cgen {
@@ -102,6 +104,8 @@ class AssemblyFile {
     // 生成给定文件名的文件
     bool write(std::string filename);
 
+    void add_fn(std::string name, InstructionList body) {}
+
   private:
     std::string filename;
 };
@@ -119,28 +123,46 @@ struct Condition {
 // 每次生成其实都是以一个函数为单位的
 // 我们可以设想一下我们需要生成一个新的汇编文件
 class X86CodeGenerator {
+    friend struct CodeVisitor;
+    friend struct DeclVisitor;
+
   public:
     // cgen的输入是一个ir程序文件
     // 输出一个assembly汇编文件代码 以及一个符号表
     AssemblyFile cgen(std::string filename);
 
-    std::string emit(ir::Decl decl);
-    std::string emit(ir::Code code);
-
+    // std::string emit(ir::Decl decl);
+    // std::string emit(ir::Code code);
     // 这样的话 这个函数就用来生成整个的assemblyfile对象
     // 或者也可以不是 因为我们还有一些辅助用的符号表
-    void emit_asm();
-
+    // void emit_asm();
+    // just for test
     InstructionList emit_asm(ir::InstructionPtr instruction);
-
-    InstructionList emit_cond(ir::InstructionPtr cond);
-    InstructionList emit_branch(ir::BranchPtr branch);
-
-    InstructionList emit_fndef(ir::FnDefPtr fndef);
+    // InstructionList emit_cond(ir::InstructionPtr cond);
+    // InstructionList emit_branch(ir::BranchPtr branch);
+    // InstructionList emit_fndef(ir::FnDefPtr fndef);
 
   private:
-    void emit_decl(ir::Decl decl);
-    void emit_code(ir::Code code);
+    // 接下来就是实现这四个函数
+    void def_fn(ir::FnDefPtr def);
+    void def_symbol(ir::SymbolDefPtr def);
+    void decl_struct(ir::StructDeclPtr decl);
+    void decl_symbol(ir::SymbolDeclPtr decl);
+
+    // 然后是针对所有ir语句的汇编指令生成
+    InstructionList emit_expr(ir::InstructionPtr expr);
+    InstructionList emit_memop(ir::InstructionPtr load_store);
+    InstructionList emit_cond(ir::InstructionPtr cond);
+    InstructionList emit_label(ir::LabelPtr label);
+    InstructionList emit_branch(ir::BranchPtr branch);
+    InstructionList emit_fncall(ir::FnCallPtr fncall);
+    InstructionList emit_ret(ir::ReturnPtr ret);
+    InstructionList emit_symdef(ir::SymbolDefPtr symdef);
+    InstructionList emit_cast(ir::CastPtr cast);
+    InstructionList emit_gep(ir::GepPtr gep);
+
+    // void emit_decl(ir::Decl decl);
+    // void emit_code(ir::Code code);
 
     Operand make_operand(ir::Symbol symbol);
 
@@ -153,10 +175,17 @@ class X86CodeGenerator {
 
     std::string get_register_name(int id);
 
+  private:
     std::string filename; // 记录正在处理的文件
     std::unordered_map<std::string, Symbol> symbol_table;
     std::unordered_map<std::string, Condition> condition_table;
     std::unordered_map<std::string, Symbol> global_table;
+    // 我们确实需要一个type table
+    // todo: Type类型需要自己实现
+    std::unordered_map<std::string, ir::Type> type_table;
+
+    // 解析的过程其实就是填充这个汇编文件
+    AssemblyFile asm_file;
 };
 
 // interface
@@ -171,6 +200,7 @@ class X86CodeGenerator {
 std::unique_ptr<X86CodeGenerator> make_x86_cgen();
 
 struct CodeVisitor {
+    // todo 这些函数体都太长了 应该简化到只有一行代码
     void operator()(ir::InstructionPtr expr) {
         // 然后它的返回值要怎么返回呢
         // 然后这里调用我们为每个ir类型写好的实现函数
@@ -180,24 +210,56 @@ struct CodeVisitor {
         for (auto inst : cgen.emit_cond(expr)) {
             list.push_back(inst);
         }
+        // todo
+        cgen.emit_expr(expr);
+        cgen.emit_memop(expr);
     }
-    void operator()(ir::LabelPtr expr) {}
-    void operator()(ir::BranchPtr expr) {}
-    void operator()(ir::FnCallPtr expr) {}
-    void operator()(ir::ReturnPtr expr) {}
-    void operator()(ir::SymbolDefPtr expr) {}
-    void operator()(ir::CastPtr expr) {}
-    void operator()(ir::GepPtr expr) {}
+    void operator()(ir::LabelPtr label) {
+        for (auto inst : cgen.emit_label(label)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::BranchPtr branch) {
+        for (auto inst : cgen.emit_branch(branch)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::FnCallPtr fncall) {
+        for (auto inst : cgen.emit_fncall(fncall)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::ReturnPtr ret) {
+        for (auto inst : cgen.emit_ret(ret)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::SymbolDefPtr symdef) {
+        // 这个会生成代码吗?? 不对 会的 会生成一个栈寄存器的减法
+        for (auto inst : cgen.emit_symdef(symdef)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::CastPtr cast) {
+        for (auto inst : cgen.emit_cast(cast)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::GepPtr gep) {
+        for (auto inst : cgen.emit_gep(gep)) {
+            list.push_back(inst);
+        }
+    }
 
     X86CodeGenerator& cgen;
     InstructionList& list;
 };
 
 struct DeclVisitor {
-    void operator()(ir::StructDeclPtr decl) {}
-    void operator()(ir::FnDefPtr fndef) { cgen.emit_fndef(fndef); }
-    void operator()(ir::SymbolDefPtr symdef) {}
-    void operator()(ir::SymbolDeclPtr decl) {}
+    void operator()(ir::StructDeclPtr decl) { cgen.decl_struct(decl); }
+    void operator()(ir::FnDefPtr def) { cgen.def_fn(def); }
+    void operator()(ir::SymbolDefPtr def) { cgen.def_symbol(def); }
+    void operator()(ir::SymbolDeclPtr decl) { cgen.decl_symbol(decl); }
     X86CodeGenerator& cgen;
 };
 

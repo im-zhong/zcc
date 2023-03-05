@@ -208,8 +208,8 @@ std::string Memory::to_string() const {
     }
 }
 
-std::string X86CodeGenerator::emit(ir::Decl decl) { return "todo"; }
-std::string X86CodeGenerator::emit(ir::Code code) { return "todo"; }
+// std::string X86CodeGenerator::emit(ir::Decl decl) { return "todo"; }
+// std::string X86CodeGenerator::emit(ir::Code code) { return "todo"; }
 
 int to_x86_type(ir::Type type) {
     // 如果是basic type那么就转换成byte
@@ -306,7 +306,7 @@ InstructionList X86CodeGenerator::emit_asm(ir::InstructionPtr expr) {
     return {mov, inst};
 }
 
-void X86CodeGenerator::emit_decl(ir::Decl decl) {}
+// void X86CodeGenerator::emit_decl(ir::Decl decl) {}
 
 // 所以Cond需要一个新的类型
 InstructionList X86CodeGenerator::emit_cond(ir::InstructionPtr cond) {
@@ -338,7 +338,35 @@ InstructionList X86CodeGenerator::emit_branch(ir::BranchPtr branch) {
     return {};
 }
 
-InstructionList X86CodeGenerator::emit_fndef(ir::FnDefPtr fndef) {
+// InstructionList X86CodeGenerator::emit_fndef(ir::FnDefPtr fndef) {
+//     // name 那么这个名字需要添加到全局符号表中
+
+//     // 其实可以最后再添加 因为size我们也不知道
+//     // 函数的size是用一条特殊的句子完成的
+//     // 就是在函数的最后一条句子里面加上 .size fnname, .-fnname
+//     global_table[fndef->name] = Symbol{.name = fndef->name, .type = 1};
+
+//     // parameter list的作用是告诉我们参数在哪里 如果函数内部的某个指令引用了
+//     // 参数 那么我们必须为其生成正确的地址
+//     // 额 可变参数的参数个数怎么来的呢?? 竟然没有 惊了
+//     // 那就这样吧
+
+//     // 卧槽 实现一个这样的类不就行了吗!!!!!!!
+//     // 把相应的代码生成都放在这里面
+//     InstructionList list;
+//     for (const auto& code : fndef->body) {
+//         // 这个code是一个variant
+//         // 针对这个variant中的每一个类型，我们都需要进行特殊的处理
+//         // 卧槽 突然觉得非常合适
+//         std::visit(CodeVisitor{*this, list}, code);
+//     }
+
+//     return list;
+// }
+
+// void X86CodeGenerator::emit_asm() {}
+
+void X86CodeGenerator::def_fn(ir::FnDefPtr fndef) {
     // name 那么这个名字需要添加到全局符号表中
 
     // 其实可以最后再添加 因为size我们也不知道
@@ -361,9 +389,61 @@ InstructionList X86CodeGenerator::emit_fndef(ir::FnDefPtr fndef) {
         std::visit(CodeVisitor{*this, list}, code);
     }
 
-    return list;
+    // 那么我们生成的东西总得放在一个地方吧
+    // 那么就是AssemblyFile 对象
+    asm_file.add_fn(fndef->name, list);
 }
 
-void X86CodeGenerator::emit_asm() {}
+void X86CodeGenerator::def_symbol(ir::SymbolDefPtr symdef) {
+    // 也就是一个global符号而已
+    // 目前暂不支持数组和结构体数组的定义
+    global_table[symdef->result.name] = Symbol{
+        .name = symdef->result.name,
+        .type = 0,
+        .size = 8,
+        .global = true,
+        // 我们可以用section指定这个符号属于 rodata data extern之类的
+        .section = 0,
+    };
+}
+
+void X86CodeGenerator::decl_struct(ir::StructDeclPtr struct_decl) {
+    // todo
+    // 这个会生成什么东西
+    // 他会生成一个结构体类型
+    // 他的作用就是给定index 然后我们可以计算出offset
+    // 这个东西难道不应该由类型系统提供吗
+
+    // 算了 暂不支持
+}
+
+// 首先说明一点 只有外部符号才会只放声明
+// 否则我们移动会使用def而不是decl
+void X86CodeGenerator::decl_symbol(ir::SymbolDeclPtr symdecl) {
+    global_table[symdecl->symbol.name] = Symbol{.name = symdecl->symbol.name};
+}
+
+InstructionList X86CodeGenerator::emit_expr(ir::InstructionPtr expr) {
+    return {};
+}
+InstructionList X86CodeGenerator::emit_memop(ir::InstructionPtr load_store) {
+    return {};
+}
+// InstructionList X86CodeGenerator::emit_cond(ir::InstructionPtr cond) {
+//     return {};
+// }
+InstructionList X86CodeGenerator::emit_label(ir::LabelPtr label) { return {}; }
+// InstructionList X86CodeGenerator::emit_branch(ir::BranchPtr branch) {
+//     return {};
+// }
+InstructionList X86CodeGenerator::emit_fncall(ir::FnCallPtr fncall) {
+    return {};
+}
+InstructionList X86CodeGenerator::emit_ret(ir::ReturnPtr ret) { return {}; }
+InstructionList X86CodeGenerator::emit_symdef(ir::SymbolDefPtr symdef) {
+    return {};
+}
+InstructionList X86CodeGenerator::emit_cast(ir::CastPtr cast) { return {}; }
+InstructionList X86CodeGenerator::emit_gep(ir::GepPtr gep) { return {}; }
 
 } // namespace cgen
