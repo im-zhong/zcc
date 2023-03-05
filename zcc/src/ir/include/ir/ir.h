@@ -105,6 +105,10 @@ struct Symbol {
     std::string name;
     Type type;
     std::string to_string() const;
+    bool is_global() const;
+    bool is_local() const;
+    bool is_constant() const;
+    std::string trim() const;
 };
 using SymbolList = std::vector<Symbol>;
 auto make_empty_symbol_list() -> SymbolList;

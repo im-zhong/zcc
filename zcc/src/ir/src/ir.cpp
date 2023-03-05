@@ -303,4 +303,9 @@ std::string Gep::to_string() const {
                        ir::to_string(struct_index));
 }
 
+bool Symbol::is_global() const { return name[0] == '@'; }
+bool Symbol::is_local() const { return name[0] == '%'; }
+bool Symbol::is_constant() const { return name[0] == '$'; }
+std::string Symbol::trim() const { return name.substr(1); }
+
 } // namespace ir

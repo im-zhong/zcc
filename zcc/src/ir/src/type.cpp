@@ -80,4 +80,35 @@ std::string PointerType::to_string() const {
     return ss.str();
 }
 
+bool BasicType::is_function() const { return false; }
+bool StructType::is_function() const { return false; }
+bool FnType::is_function() const { return true; }
+bool PointerType::is_function() const { return false; }
+
+int BasicType::get_size() const {
+    switch (type) {
+    // 不对呀 这个I8不就是bool吗
+    case IR::BOOL:
+        return 1;
+    case IR::I8:
+        return 1;
+    case IR::I16:
+        return 2;
+    case IR::I32:
+        return 4;
+    case IR::I64:
+        return 8;
+    case IR::F32:
+        return 4;
+    case IR::F64:
+        return 8;
+    default:
+        printf("basic type get size bug\n");
+        return -1;
+    }
+}
+int StructType::get_size() const { return 8; }
+int FnType::get_size() const { return 8; }
+int PointerType::get_size() const { return 8; }
+
 } // namespace ir
