@@ -3,8 +3,12 @@ source_filename = "llvm.c"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-redhat-linux-gnu"
 
+%struct.student = type { i32, ptr }
+
 @i = dso_local constant i32 1, align 4
 @j = dso_local global i32 8, align 4
+@arr = dso_local global [2 x i32] [i32 1, i32 2], align 4
+@stuarr = dso_local global [2 x %struct.student] [%struct.student { i32 1, ptr null }, %struct.student { i32 2, ptr null }], align 16
 @k = dso_local global i32 0, align 4
 
 ; Function Attrs: noinline nounwind optnone uwtable

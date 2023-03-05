@@ -113,3 +113,15 @@ int test_mod() {
 }
 
 int test_fn(int i, double d) { return test_fn(i, d); }
+
+// 全局数组是怎么实现的
+// @arr = dso_local global [2 x i32] [i32 1, i32 2], align 4
+int arr[2] = {1, 2};
+
+// 结构体数组是怎么实现的
+// @stuarr = dso_local global [2 x %struct.student] [%struct.student { i32 1,
+// ptr null }, %struct.student { i32 2, ptr null }], align 16
+struct student stuarr[2] = {
+    {1, 0},
+    {2, 0},
+};

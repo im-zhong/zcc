@@ -272,6 +272,7 @@ struct X86 {
         SHL,
         SAR,
         SHR,
+        CMP,
 
         // data type size
         BYTE,   // 1 byte

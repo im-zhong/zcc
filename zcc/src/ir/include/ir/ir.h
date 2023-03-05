@@ -98,6 +98,8 @@ struct IR {
     };
 };
 
+bool is_cond(int op);
+
 std::string type_to_string(Type type);
 std::string op_to_string(int op);
 

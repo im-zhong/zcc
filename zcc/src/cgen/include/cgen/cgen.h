@@ -5,6 +5,7 @@
 
 #include "ir/driver.h"
 #include "ir/ir.h"
+#include <list>
 #include <ranges>
 #include <variant>
 
@@ -104,6 +105,16 @@ class AssemblyFile {
   private:
     std::string filename;
 };
+// 我们需要一个condition_table
+struct Condition {
+    // 其实一个int就可以表示 不过这是优化阶段的事情
+    // < <= > >= == !=
+    int op;
+    // signed unsigned
+    bool is_signed;
+
+    std::string to_string() const;
+};
 
 // 每次生成其实都是以一个函数为单位的
 // 我们可以设想一下我们需要生成一个新的汇编文件
@@ -116,7 +127,16 @@ class X86CodeGenerator {
     std::string emit(ir::Decl decl);
     std::string emit(ir::Code code);
 
+    // 这样的话 这个函数就用来生成整个的assemblyfile对象
+    // 或者也可以不是 因为我们还有一些辅助用的符号表
+    void emit_asm();
+
     InstructionList emit_asm(ir::InstructionPtr instruction);
+
+    InstructionList emit_cond(ir::InstructionPtr cond);
+    InstructionList emit_branch(ir::BranchPtr branch);
+
+    InstructionList emit_fndef(ir::FnDefPtr fndef);
 
   private:
     void emit_decl(ir::Decl decl);
@@ -135,6 +155,8 @@ class X86CodeGenerator {
 
     std::string filename; // 记录正在处理的文件
     std::unordered_map<std::string, Symbol> symbol_table;
+    std::unordered_map<std::string, Condition> condition_table;
+    std::unordered_map<std::string, Symbol> global_table;
 };
 
 // interface
@@ -147,5 +169,38 @@ class X86CodeGenerator {
 // };
 
 std::unique_ptr<X86CodeGenerator> make_x86_cgen();
+
+struct CodeVisitor {
+    void operator()(ir::InstructionPtr expr) {
+        // 然后它的返回值要怎么返回呢
+        // 然后这里调用我们为每个ir类型写好的实现函数
+        // 然后返回值
+        // list.merge(cgen.emit_cond(expr));
+
+        for (auto inst : cgen.emit_cond(expr)) {
+            list.push_back(inst);
+        }
+    }
+    void operator()(ir::LabelPtr expr) {}
+    void operator()(ir::BranchPtr expr) {}
+    void operator()(ir::FnCallPtr expr) {}
+    void operator()(ir::ReturnPtr expr) {}
+    void operator()(ir::SymbolDefPtr expr) {}
+    void operator()(ir::CastPtr expr) {}
+    void operator()(ir::GepPtr expr) {}
+
+    X86CodeGenerator& cgen;
+    InstructionList& list;
+};
+
+struct DeclVisitor {
+    void operator()(ir::StructDeclPtr decl) {}
+    void operator()(ir::FnDefPtr fndef) { cgen.emit_fndef(fndef); }
+    void operator()(ir::SymbolDefPtr symdef) {}
+    void operator()(ir::SymbolDeclPtr decl) {}
+    X86CodeGenerator& cgen;
+};
+
+// 对于碰到的cond ir 我们需要分析
 
 } // namespace cgen

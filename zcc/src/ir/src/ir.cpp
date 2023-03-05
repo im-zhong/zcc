@@ -308,4 +308,9 @@ bool Symbol::is_local() const { return name[0] == '%'; }
 bool Symbol::is_constant() const { return name[0] == '$'; }
 std::string Symbol::trim() const { return name.substr(1); }
 
+bool is_cond(int op) {
+    return op == IR::LESS || op == IR::LESS_QEUAL || op == IR::GREAT ||
+           op == IR::GREAT_EQUAL || op == IR::EQUAL || op == IR::NOT_EQUAL;
+}
+
 } // namespace ir

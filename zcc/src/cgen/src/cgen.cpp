@@ -28,14 +28,16 @@ std::unique_ptr<X86CodeGenerator> make_x86_cgen() {
     return std::make_unique<X86CodeGenerator>();
 }
 
+// 这个函数几乎就是这个样子了 所有的处理都在内部进行
+// 这个AssemblyFile应该在内部生成 而不是外部
 AssemblyFile X86CodeGenerator::cgen(std::string filename) {
-
+    this->filename = filename;
     auto driver = ir::driver{};
     driver.parse(filename);
 
     // step1: 首先分析decl list 然后填充global符号表
-    for (auto decl : driver.get_decl_list()) {
-        emit_decl(decl);
+    for (const auto& decl : driver.get_decl_list()) {
+        std::visit(DeclVisitor{*this}, decl);
     }
 
     // step2: 挨个分析每个函数 给每个函数的内部生成一个小的符号表
@@ -305,5 +307,63 @@ InstructionList X86CodeGenerator::emit_asm(ir::InstructionPtr expr) {
 }
 
 void X86CodeGenerator::emit_decl(ir::Decl decl) {}
+
+// 所以Cond需要一个新的类型
+InstructionList X86CodeGenerator::emit_cond(ir::InstructionPtr cond) {
+    // 首先 我们需要判断传入的指令是否是cond指令
+    assert(ir::is_cond(cond->op));
+
+    // 那么必然是有左右符号的
+    // 那么我们就要生成cmp指令
+    Instruction cmp;
+    cmp.op = X86::CMP;
+    cmp.type = to_x86_type(cond->left.type);
+    // cmp的顺序和ir的顺序相反
+    cmp.src = make_operand(*cond->right);
+    cmp.dst = make_operand(cond->left);
+
+    // 那么现在我们需要填充一个cond table
+    // 卧槽 有缺陷 数据类型没有无符号数
+    // todo: IR的基础类型需要添加无符号数
+    // 我真是吐了，variant真是太难用啦！！！
+    auto cond_symbol = Condition{.op = cond->op, .is_signed = true};
+    // 插入condition table
+    condition_table[cond->result.name] = cond_symbol;
+
+    return {cmp};
+}
+
+InstructionList X86CodeGenerator::emit_branch(ir::BranchPtr branch) {
+    // todo
+    return {};
+}
+
+InstructionList X86CodeGenerator::emit_fndef(ir::FnDefPtr fndef) {
+    // name 那么这个名字需要添加到全局符号表中
+
+    // 其实可以最后再添加 因为size我们也不知道
+    // 函数的size是用一条特殊的句子完成的
+    // 就是在函数的最后一条句子里面加上 .size fnname, .-fnname
+    global_table[fndef->name] = Symbol{.name = fndef->name, .type = 1};
+
+    // parameter list的作用是告诉我们参数在哪里 如果函数内部的某个指令引用了
+    // 参数 那么我们必须为其生成正确的地址
+    // 额 可变参数的参数个数怎么来的呢?? 竟然没有 惊了
+    // 那就这样吧
+
+    // 卧槽 实现一个这样的类不就行了吗!!!!!!!
+    // 把相应的代码生成都放在这里面
+    InstructionList list;
+    for (const auto& code : fndef->body) {
+        // 这个code是一个variant
+        // 针对这个variant中的每一个类型，我们都需要进行特殊的处理
+        // 卧槽 突然觉得非常合适
+        std::visit(CodeVisitor{*this, list}, code);
+    }
+
+    return list;
+}
+
+void X86CodeGenerator::emit_asm() {}
 
 } // namespace cgen
