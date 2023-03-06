@@ -2,7 +2,9 @@ project(cgen)
 
 add_library(cgen STATIC
     src/cgen.cpp
-    src/x86.cpp)
+    src/x86.cpp
+    src/register_allocation.cpp
+    src/liveness_analysis.cpp)
 target_link_libraries(cgen
     PUBLIC ir
     PUBLIC fmt::fmt)

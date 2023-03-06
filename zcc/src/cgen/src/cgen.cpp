@@ -2,6 +2,8 @@
 // zhangzhong
 
 #include "cgen/cgen.h"
+#include "cgen/liveness_analysis.h"
+#include "cgen/register_allocation.h"
 #include "cgen/x86.h"
 #include "ir/driver.h"
 #include "ir/ir.h"
@@ -388,6 +390,13 @@ void X86CodeGenerator::def_fn(ir::FnDefPtr fndef) {
         // 卧槽 突然觉得非常合适
         std::visit(CodeVisitor{*this, list}, code);
     }
+
+    // 生成指令之后我们就需要对这个函数体进行一个寄存器分配
+    // 接口
+    // input: Instruction List + 一个符号表 env
+    // output: 仍然是一个InstructionList 只不过里面的符号都被赋予了寄存器
+    auto reg = make_register_allocator(list);
+    list = reg->allocate();
 
     // 那么我们生成的东西总得放在一个地方吧
     // 那么就是AssemblyFile 对象

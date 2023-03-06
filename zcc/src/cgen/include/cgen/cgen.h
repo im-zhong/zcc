@@ -77,6 +77,8 @@ struct Symbol {
     bool global;
     int section;
     int offset;
+    // 用于记录分配了哪个寄存器
+    int reg;
 };
 
 // 那么一个函数其实就是指令的列表
