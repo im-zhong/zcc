@@ -32,4 +32,31 @@ void test_undirected_graph() {
     EXPECT_FALSE(graph.has_edge("hello", "from"));
 }
 
-int main(int argc, char* argv[]) { test_undirected_graph(); }
+void test_directed_graph() {
+    util::DirectedGraph<std::string> graph{};
+    graph.dump();
+    EXPECT_FALSE(graph.has_node("node"));
+    EXPECT_FALSE(graph.has_edge("from", "to"));
+
+    graph.insert_edge("from", "to");
+    EXPECT_TRUE(graph.has_node("from"));
+    EXPECT_TRUE(graph.has_node("to"));
+    EXPECT_TRUE(graph.has_edge("from", "to"));
+    EXPECT_FALSE(graph.has_edge("to", "from"));
+
+    graph.insert_edge("hello", "to");
+    EXPECT_TRUE(graph.has_node("from"));
+    EXPECT_TRUE(graph.has_node("to"));
+    EXPECT_TRUE(graph.has_node("hello"));
+    EXPECT_TRUE(graph.has_edge("from", "to"));
+    EXPECT_FALSE(graph.has_edge("to", "from"));
+    EXPECT_TRUE(graph.has_edge("hello", "to"));
+    EXPECT_FALSE(graph.has_edge("to", "hello"));
+    EXPECT_FALSE(graph.has_edge("from", "hello"));
+    EXPECT_FALSE(graph.has_edge("hello", "from"));
+}
+
+int main(int argc, char* argv[]) {
+    test_undirected_graph();
+    test_directed_graph();
+}

@@ -66,6 +66,7 @@ struct Instruction {
 
     // std::string to_string() const;
     std::string emit() const;
+    bool has_label() const { return label.has_value(); }
 };
 using InstructionList = std::vector<Instruction>;
 

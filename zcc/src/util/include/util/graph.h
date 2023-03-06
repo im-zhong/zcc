@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <bits/ranges_algobase.h>
+#include <bits/ranges_util.h>
 #include <cassert>
 #include <iostream>
 #include <list>
@@ -17,15 +18,59 @@ namespace util {
 template <typename Node> class DirectedGraph {
   public:
     using node_type = Node;
-    using iterator_type = typename std::list<node_type>::iterator_type;
 
-    iterator_type insert_node(node_type node);
-    void delete_node(iterator_type node);
+    void dump() {
+        // 输出所有的节点 以及所有的边
+        for (const auto& node : graph) {
+            std::cout << node.first << ": ";
+            for (const auto& adj : node.second) {
+                std::cout << node.first << "->" << adj << ", ";
+            }
+            std::cout << std::endl;
+        }
+    }
 
-    // 不对 我的这个顺序不对 我应该确实发现了重复再写这个数据结构
+    bool has_node(Node node) { return graph.find(node) != graph.end(); }
+
+    bool has_edge(Node from, Node to) {
+        if (!has_node(from) || !has_node(to)) {
+            return false;
+        }
+        auto& adj = graph.at(from);
+        return std::ranges::find(adj, to) != adj.end();
+    }
+
+    void insert_node(Node node) {
+        if (has_node(node)) {
+            return;
+        }
+        graph.insert({node, {}});
+    }
+
+    void insert_edge(Node from, Node to) {
+        // 被插入的两个节点都需要存在
+        insert_node(from);
+        insert_node(to);
+        auto& adj = graph.at(from);
+        adj.push_back(to);
+    }
+
+    // 得到某个节点的邻接节点
+    std::list<node_type> get_adjacency(Node node) {
+        if (has_node(node)) {
+            return graph.at(node);
+        } else {
+            return {};
+        }
+    }
 
   private:
-    std::vector<std::list<node_type>> graph;
+    std::unordered_map<Node, std::list<node_type>> graph;
+
+    // 还得区分是否存在节点
+
+    size_t id = 0;
+    size_t get_id() { return id++; }
 };
 
 using std::size_t;

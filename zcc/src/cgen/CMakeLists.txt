@@ -7,8 +7,10 @@ add_library(cgen STATIC
     src/liveness_analysis.cpp)
 target_link_libraries(cgen
     PUBLIC ir
+    PUBLIC zcc_util
     PUBLIC fmt::fmt)
-target_include_directories(cgen PUBLIC include)
+target_include_directories(cgen 
+    PUBLIC include)
 
 add_executable(test_cgen src/test_cgen.cpp)
 target_link_libraries(test_cgen

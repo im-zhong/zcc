@@ -4,6 +4,7 @@
 #pragma once
 
 #include "cgen.h"
+#include "util/graph.h"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -20,6 +21,10 @@ namespace cgen {
 class InterferenceGraph {
   public:
     bool coloring() { return false; }
+
+  private:
+    // 这个东西没法用啊 我也不知道size有多大呀
+    // util::UndirectedGraph<std::string, std::size_t N>
 };
 
 struct BasicBlockInst {
@@ -271,6 +276,9 @@ class ControlFlowGraph {
     std::vector<node_ptr> nodes;
 
   private:
+    // make cfg
+    void find_leaders();
+    void build_graph();
 };
 
 std::unique_ptr<ControlFlowGraph> make_cfg(InstructionList insts);
