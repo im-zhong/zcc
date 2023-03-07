@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <ranges>
+#include <set>
 #include <unordered_map>
 #include <variant>
 
@@ -64,9 +65,36 @@ struct Instruction {
     Operand src;
     std::optional<Operand> dst;
 
+    std::optional<std::string> def = std::nullopt;
+    std::set<std::string> use;
+    bool is_assign;
+
+    // 对于这个类型 我们可以计算它的def和use 根据这个指令
+    void calculate_defuse() {
+        is_assign = false;
+        // 只有register才能有use和def信息
+        if (auto reg = std::get_if<Register>(&src); reg) {
+            use.insert(reg->reg);
+        }
+
+        if (dst) {
+            is_assign = true;
+            if (auto reg = std::get_if<Register>(&*dst); reg) {
+                use.insert(reg->reg);
+                def = (reg->reg);
+            }
+        }
+    }
+
     // std::string to_string() const;
     std::string emit() const;
     bool has_label() const { return label.has_value(); }
+    std::string get_label() const {
+        if (label) {
+            return *label;
+        }
+        return "";
+    }
 };
 using InstructionList = std::vector<Instruction>;
 

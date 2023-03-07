@@ -1,6 +1,8 @@
 // 2023/3/6
 // zhangzhong
 
+#pragma once
+
 #include "cgen.h"
 #include "cgen/liveness_analysis.h"
 #include <memory>
@@ -9,7 +11,7 @@ namespace cgen {
 
 class RegisterAllocator {
   public:
-    RegisterAllocator(InstructionList list) : _list(list) {}
+    RegisterAllocator(InstructionList list) : _list(list), cfg(list) {}
     InstructionList allocate();
 
   private:

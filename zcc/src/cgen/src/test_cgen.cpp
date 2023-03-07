@@ -64,11 +64,17 @@ void test_branch() {
 void test_cond() {}
 
 void test_liveness_analysis() {
-    cgen::ControlFlowGraph graph;
+    cgen::ControlFlowGraph graph{cgen::InstructionList{}};
     graph.init();
     graph.print();
     graph.liveness_analysis();
     graph.print_inout();
+}
+
+void test_liveness_analysis2() {
+    cgen::ControlFlowGraph graph{cgen::InstructionList{}};
+
+    graph.analyse();
 }
 
 int main(int argc, char* argv[]) {
@@ -76,4 +82,5 @@ int main(int argc, char* argv[]) {
     test_branch();
     test_cond();
     test_liveness_analysis();
+    test_liveness_analysis2();
 }

@@ -20,7 +20,7 @@ InstructionList RegisterAllocator::allocate() {
         auto interfere_graph = cfg->analyse();
 
         // 3. 然后对冲突图进行着色
-        if (interfere_graph->coloring()) {
+        if (interfere_graph->coloring(16)) {
             // 如果成功着色那么就直接返回cfg的指令即可
             return cfg->emit_asm();
         }

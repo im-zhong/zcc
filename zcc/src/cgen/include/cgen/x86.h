@@ -273,6 +273,22 @@ struct X86 {
         SAR,
         SHR,
         CMP,
+        JMP,
+
+        JE,
+        JNE,
+        JS,
+        JNS,
+        JG,
+        JGE,
+        JL,
+        JLE,
+        JA,
+        JAE,
+        JB,
+        JBE,
+
+        RET,
 
         // data type size
         BYTE,   // 1 byte
@@ -290,6 +306,12 @@ struct X86 {
         INDEXED_DISPLACEMENT,
     };
 };
+
+inline constexpr bool is_jmp(int op) { return op == X86::JMP; }
+inline constexpr bool is_cjmp(int op) {
+    return op >= X86::JE && op <= X86::JBE;
+}
+inline constexpr bool is_ret(int op) { return op == X86::RET; }
 
 // 我们有很多这样的需求 经常需要将某个枚举值变为字符串
 // 那么我们提供一个简单的数组做这个mapping不就可以了吗
