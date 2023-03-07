@@ -313,6 +313,26 @@ inline constexpr bool is_cjmp(int op) {
 }
 inline constexpr bool is_ret(int op) { return op == X86::RET; }
 
+inline constexpr int type_to_size(int type) {
+    switch (type) {
+    case X86::BYTE:
+        return 1;
+    case X86::WORD:
+        return 2;
+    case X86::DWORD:
+        return 3;
+    case X86::QWORD:
+        return 8;
+    case X86::FLOAT:
+        return 4;
+    case X86::DOUBLE:
+        return 8;
+    default:
+        std::cout << "type to size bug\n";
+        return 0;
+    }
+}
+
 // 我们有很多这样的需求 经常需要将某个枚举值变为字符串
 // 那么我们提供一个简单的数组做这个mapping不就可以了吗
 // 这个mapping最好是作为一个函数提供 否则这个数组会被复制非常多份

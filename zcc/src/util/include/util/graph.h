@@ -100,6 +100,25 @@ template <typename Key> class UndirectedGraph {
         nodes[key].is_hide = false;
     }
 
+    // auto begin() {
+
+    //  }
+    // auto end() { return nodes.end(); }
+
+    // bool empty() {
+
+    // }
+
+    std::set<Key> get_nodes() {
+        auto unhided_nodes = std::set<Key>{};
+        for (const auto& [key, node] : nodes) {
+            if (!node.is_hide) {
+                unhided_nodes.insert(key);
+            }
+        }
+        return unhided_nodes;
+    }
+
     void erase_node(Key key) {
         if (auto it = nodes.find(key); it != nodes.end()) {
             // 找到了 才需要删除

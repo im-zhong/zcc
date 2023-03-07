@@ -38,6 +38,7 @@ struct Register {
 struct Memory {
     // 不行啊 这个寻址模式很难通过判断给了那个值做出选择
     // 还是一个枚举来得实在
+    std::string mem;
     int mode;
     std::optional<Register> base;
     std::optional<Register> index;
@@ -108,6 +109,8 @@ struct Symbol {
     int offset;
     // 用于记录分配了哪个寄存器
     int reg;
+    // 用于寄存器分配指定颜色
+    int color;
 };
 
 // 那么一个函数其实就是指令的列表
@@ -151,6 +154,16 @@ struct Condition {
     std::string to_string() const;
 };
 
+class StorageTable {
+  public:
+    // 需要指令所处的函数吗 这个有意义吗
+    // 可能测试是有意义的
+    std::string new_stack_memory(size_t size) { return "todo memory table"; }
+    std::string new_global_memory(size_t size) { return "todo memory table"; }
+
+  private:
+};
+
 // 每次生成其实都是以一个函数为单位的
 // 我们可以设想一下我们需要生成一个新的汇编文件
 class X86CodeGenerator {
@@ -172,6 +185,10 @@ class X86CodeGenerator {
     // InstructionList emit_cond(ir::InstructionPtr cond);
     // InstructionList emit_branch(ir::BranchPtr branch);
     // InstructionList emit_fndef(ir::FnDefPtr fndef);
+
+    // 添加两个symbol table的接口??
+
+    // auto& get_storage_table() { return storage_table; }
 
   private:
     // 接下来就是实现这四个函数
@@ -214,6 +231,7 @@ class X86CodeGenerator {
     // 我们确实需要一个type table
     // todo: Type类型需要自己实现
     std::unordered_map<std::string, ir::Type> type_table;
+    // StorageTable storage_table;
 
     // 解析的过程其实就是填充这个汇编文件
     AssemblyFile asm_file;
@@ -292,6 +310,39 @@ struct DeclVisitor {
     void operator()(ir::SymbolDefPtr def) { cgen.def_symbol(def); }
     void operator()(ir::SymbolDeclPtr decl) { cgen.decl_symbol(decl); }
     X86CodeGenerator& cgen;
+};
+
+class SymbolTable {
+  public:
+    // 在这里保证全局分配的寄存器不重名
+    std::string new_register(int type) { return "todo new register"; }
+
+    // todo: 这里需要返回引用
+    Symbol get_symbol(std::string name) { return Symbol{}; }
+
+  private:
+};
+
+class Env {
+  public:
+    auto& get_storage_table() { return storage_table; }
+    auto& get_symbol_table() { return symbol_table; }
+
+    // 其实为了方便 我们可以托管这些底层类的接口
+    auto new_stack_memory(int size) {
+        return storage_table.new_stack_memory(size);
+    }
+    auto new_global_memory(int size) {
+        return storage_table.new_stack_memory(size);
+    }
+    auto new_register(int type) { return symbol_table.new_register(type); }
+
+    void add_symbol(std::string name, Symbol symbol) {}
+    auto get_symbol(std::string name) { return symbol_table.get_symbol(name); }
+
+  private:
+    StorageTable storage_table;
+    SymbolTable symbol_table;
 };
 
 // 对于碰到的cond ir 我们需要分析

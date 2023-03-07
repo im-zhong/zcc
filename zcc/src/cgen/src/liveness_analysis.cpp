@@ -2,6 +2,7 @@
 // zhangzhong
 
 #include "cgen/liveness_analysis.h"
+#include "cgen/cgen.h"
 #include "cgen/x86.h"
 #include "util/graph.h"
 #include <bits/ranges_algo.h>
@@ -85,7 +86,36 @@ bool InterferenceGraph::coloring(int size) {
     // 首先我们需要一个stack
     std::stack<std::string> regs;
 
-    // 就是找到所有的degree < size的节点 并从图中删除该节点
+    while (true) {
+        auto nodes = graph.get_nodes();
+        if (nodes.empty()) {
+
+            // 到了这个地方 我们肯定可以正常对寄存器进行着色了
+            assign();
+            return true;
+        }
+
+        bool find_node = false;
+        // 就是找到所有的degree < size的节点 并从图中删除该节点
+        for (const auto& node : nodes) {
+            // node: string
+            if (graph.get_degree(node) < size) {
+                regs.push(node);
+                graph.hide_node(node);
+                find_node = true;
+                break;
+            }
+        }
+
+        if (!find_node) {
+            // 那么此时必须进行一波spill
+            // 根据目前的策略 我们就随机spill一个就行
+            // what spill will do??
+            // spill(*nodes.begin());
+            // 到这里其实就说明着色失败了呀
+            return false;
+        }
+    }
 
     return false;
 }
@@ -235,6 +265,188 @@ void BasicBlock::analyze_liveness() {
 
         if (inst.def) {
             kills.insert(*inst.def);
+        }
+    }
+}
+
+void ControlFlowGraph::spill(std::string name) {
+    // 遍历所有的指令 如果某条指令use了这个name 那么添加一个load
+    // 如果某条指令def了这个name 那么添加一个store
+    // 并且在符号表中标记一个内存位置
+
+    int id = 0;
+
+    for (auto& [label, block] : blocks) {
+        // for (auto& inst : block.insts) {
+        //     // 还是老样子 首先必须得是register才会纳入考虑
+        //     if (auto reg = std::get_if<Register>(&inst.src); reg) {
+        //         if (reg->reg == name) {
+        //             // 那么我们需要修改这个名字
+        //             reg->reg += (std::to_string(id++));
+        //             // 需要在符号表中重新插入此符号
+        //             // 这个玩意最好让symbol 自己实现一个函数
+        //             // todo: cgen.add_symbol(new_name, new_symbol);
+
+        //             // 然后我需要在这个指令的前面加上一个load 指令
+        //             // 这个load指令需要一个内存位置
+        //             // 内存位置需要在符号表中找到
+        //             // 同样也需要使用label来引用
+        //             // auto storage_table = env.get_storage_table();
+        //             // 某个寄存器的大小应该跟指令有关
+
+        //             // auto regsiter_table = env.get_register_table();
+
+        //             // 他们的接口用type是不是更统一一点
+        //             // 而且指令中也是使用的type
+        //             auto new_reg = env.new_register(inst.type);
+        //             // 一个新的寄存器 应该也需要在符号表中分配一个新的寄存器
+        //             auto mem = env.new_stack_memory(type_to_size(inst.type));
+
+        //             // 每次使用这个符号 都需要一个新的寄存器名字
+        //             auto load = Instruction{.op = X86::MOV,
+        //                                     .type = inst.type,
+        //                                     .src =
+        //                                         Memory{
+        //                                             .mem = mem,
+        //                                         },
+        //                                     .dst = Register{.reg = new_reg}};
+
+        //             // 但是我怎么把这个指令插入inst前面呢?？？？？
+        //             // 这个功能只能用迭代器实现 不能用for range
+        //         }
+        //     }
+        // }
+
+        for (auto it = block.insts.begin(); it != block.insts.end(); it++) {
+
+            auto& inst = *it;
+
+            // 还是老样子 首先必须得是register才会纳入考虑
+            if (auto reg = std::get_if<Register>(&inst.src); reg) {
+                if (reg->reg == name) {
+                    // 那么我们需要修改这个名字
+                    auto new_reg = env.new_register(inst.type);
+                    // 一个新的寄存器 应该也需要在符号表中分配一个新的寄存器
+                    auto new_mem =
+                        env.new_stack_memory(type_to_size(inst.type));
+
+                    // 需要在符号表中重新插入此符号
+                    // 这个玩意最好让symbol 自己实现一个函数
+                    // todo: cgen.add_symbol(new_name, new_symbol);
+                    reg->reg = new_reg;
+                    env.add_symbol(new_reg, Symbol{});
+
+                    // 然后我需要在这个指令的前面加上一个load 指令
+                    // 这个load指令需要一个内存位置
+                    // 内存位置需要在符号表中找到
+                    // 同样也需要使用label来引用
+                    // auto storage_table = env.get_storage_table();
+                    // 某个寄存器的大小应该跟指令有关
+
+                    // auto regsiter_table = env.get_register_table();
+
+                    // 他们的接口用type是不是更统一一点
+                    // 而且指令中也是使用的type
+
+                    // 每次使用这个符号 都需要一个新的寄存器名字
+                    auto load = Instruction{
+                        .op = X86::MOV,
+                        .type = inst.type,
+                        .src =
+                            Memory{
+                                .mem = new_mem,
+                            },
+                        .dst =
+                            Register{
+                                .reg = new_reg,
+                            },
+                    };
+
+                    // 但是我怎么把这个指令插入inst前面呢?？？？？
+                    // 这个功能只能用迭代器实现 不能用for range
+                    block.insts.insert(it, load);
+                }
+            }
+
+            // 然后是对def进行考察
+            // 如果是这样的呢
+            // tody: 感觉会出bug add %1, %1
+            if (!inst.dst) {
+                continue;
+            }
+
+            if (auto reg = std::get_if<Register>(&*inst.dst); reg) {
+                // 处理逻辑和上面差不多
+                // 只不过我们需要换成store
+
+                if (reg->reg == name) {
+                    auto new_reg = env.new_register(inst.type);
+                    // 一个新的寄存器 应该也需要在符号表中分配一个新的寄存器
+                    auto new_mem =
+                        env.new_stack_memory(type_to_size(inst.type));
+                    reg->reg = new_reg;
+                    // todo: 给新的寄存器添加符号
+                    env.add_symbol(new_reg, Symbol{});
+
+                    auto store = Instruction{
+                        .op = X86::MOV,
+                        .type = inst.type,
+                        .src =
+                            Register{
+                                .reg = new_reg,
+                            },
+                        .dst =
+                            Memory{
+                                .mem = new_mem,
+                            },
+                    };
+
+                    // 虽然很丑 但是能用
+                    // 插入本条指令的下一条指令
+                    auto next_it = it;
+                    next_it++;
+                    block.insts.insert(next_it, store);
+                }
+            }
+        }
+    }
+}
+
+void InterferenceGraph::assign() {
+    // simplify阶段成功结束之后 我们就进行着色
+    // 我们给寄存器上的色保存在符号表中
+    auto colors = std::vector<bool>{};
+    colors.resize(size, false);
+
+    while (regs.empty()) {
+        // why range dont work??
+        std::fill(colors.begin(), colors.end(), false);
+
+        auto reg = regs.top();
+        regs.pop();
+
+        // 首先将栈顶的节点重新插入图中
+        graph.insert_node(reg);
+        // 尽可能选择邻居中没有选择过的最小的寄存器 这样可以尽可能少的使用寄存器
+
+        auto adjs = graph.get_adjacency(reg);
+        for (auto& adj : adjs) {
+            // 如果某个邻居已经占据了我们想要分配的颜色
+            if (auto color = env.get_symbol(adj).color; color != -1) {
+                assert(color < size);
+                colors[color] = true;
+            }
+        }
+
+        // 然后我们遍历colors 找出最小的没有被分配的颜色
+        for (size_t i = 0; i < colors.size(); i++) {
+            if (!colors[i]) {
+                // 可以用color i来给当前的reg着色
+                // todo: 这里应该是一个引用
+                auto symbol = env.get_symbol(reg);
+                symbol.color = static_cast<int>(i);
+                break;
+            }
         }
     }
 }

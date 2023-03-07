@@ -12,6 +12,7 @@
 #include <memory>
 #include <ranges>
 #include <set>
+#include <stack>
 #include <unordered_map>
 #include <vector>
 
@@ -27,7 +28,29 @@ class InterferenceGraph {
   public:
     InterferenceGraph(ControlFlowGraph& cfg) : _cfg(cfg) { init(); }
 
+    // 这个可以给出一个选择, 也就是degree最大的节点
+    std::string spill_choice() {
+        auto nodes = graph.get_nodes();
+        std::string reg = "";
+        int degree = 0;
+        for (const auto& node : graph.get_nodes()) {
+            if (graph.get_degree(node) > degree) {
+                degree = graph.get_degree(node);
+                reg = node;
+            }
+        }
+        return reg;
+    }
+
+    // 分成两个阶段
+    // 第一个阶段是
     bool coloring(int size);
+
+    void simplify();
+    void assign();
+    // 可能会有coalease
+    // 不是在这里做的 是在cfg上做的
+    // void coalease() {}
 
   private:
     // 这个东西肯定没法用 我们根本不知道N有多大呀
@@ -37,8 +60,14 @@ class InterferenceGraph {
 
     void init();
 
+    // 不是你进行spill
+    // void spill(std::string reg);
+
     ControlFlowGraph& _cfg;
     util::UndirectedGraph<std::string> graph;
+    int size;
+    std::stack<std::string> regs;
+    Env env;
 };
 
 std::unique_ptr<InterferenceGraph>
@@ -127,7 +156,7 @@ class ControlFlowGraph {
     InstructionList emit_asm() { return {}; }
 
     // spill一个随机的寄存器 那些复杂的优化规则太麻烦了
-    void spill() {}
+    void spill(std::string symbol);
 
     std::unordered_map<std::string, BasicBlock>& get_blocks() {
         return this->blocks;
@@ -201,6 +230,10 @@ class ControlFlowGraph {
         // 这样设计不好 这里应该算一个完整的单元 我们可以添加测试用例
         return make_interference_graph(*this);
     }
+
+    // todo
+    // 消除 %r1 = %r1
+    void coalease() {}
 
     // 在寄存器分配的过程中 我们仍然需要一个符号表
     // 因为我们需要给这些符号分配寄存器
@@ -405,6 +438,7 @@ class ControlFlowGraph {
     std::unordered_map<std::string, BasicBlock> blocks;
     util::DirectedGraph<std::string> cfg;
     InstructionList _insts;
+    Env env;
 };
 
 std::unique_ptr<ControlFlowGraph> make_cfg(InstructionList insts);
