@@ -6,7 +6,6 @@
 #include "cgen.h"
 #include "util/graph.h"
 #include <algorithm>
-#include <bits/ranges_algo.h>
 #include <cassert>
 #include <iostream>
 #include <memory>

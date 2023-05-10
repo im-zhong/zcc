@@ -5,8 +5,6 @@
 #include "cgen/cgen.h"
 #include "cgen/x86.h"
 #include "util/graph.h"
-#include <bits/ranges_algo.h>
-#include <bits/ranges_algobase.h>
 #include <list>
 #include <memory>
 #include <queue>

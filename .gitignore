@@ -37,3 +37,10 @@ build
 compile_commands.json
 CMakeUserPresets.json
 tmp
+
+# projext related
+.vscode
+zcc/src/ir/include/ir/location.hh
+zcc/src/ir/include/ir/parser.hpp
+zcc/src/ir/src/parser.cpp
+zcc/src/ir/src/scanner.cpp
