@@ -24,6 +24,7 @@ class zccRecipe(ConanFile):
     def requirements(self):
         self.requires("fmt/9.1.0")
         self.requires("gtest/cci.20210126")
+        self.requires("doctest/2.4.11")
 
     # get cmake 3.26.x
     def build_requirements(self):

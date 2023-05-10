@@ -3,6 +3,7 @@
 
 #include "util/string_table.h"
 #include <cassert>
+#include <iostream>
 
 int main() {
     util::StringTable table;
@@ -14,4 +15,6 @@ int main() {
     assert(table.contains("hello"));
     assert(table.contains("world"));
     assert(!table.contains("zhangzhong"));
+
+    std::cout << a << b << c << std::endl;
 }

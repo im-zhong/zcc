@@ -12,6 +12,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 find_package(fmt REQUIRED)
 find_package(GTest REQUIRED)
+find_package(doctest REQUIRED)
 
 add_subdirectory(util)
 add_subdirectory(zcc)
